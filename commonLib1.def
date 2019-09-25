@@ -1,0 +1,112 @@
+declare Function tableDoesntIncludeColumns(byval tableName as string,TestColumns() as string) as logical
+
+declare function görTillBasTabellReturneraPath(byval tableName as string) as string
+declare sub görTillBasTabell(byval tableName as string)
+
+declare Function RowColumnAsString(ByVal tableName as String, ByVal columnName as String) as String
+	
+declare sub presentRessults()
+
+declare sub GetOpentables(TableArray() as String)
+
+declare sub closeAllBut(tableNames() as string)
+declare sub removeIndexfromtables(tableNames() as string)
+declare sub tableOpener(tableNames() as string)
+declare sub tableCloserAndCommiter(tableNames() as string)
+declare sub openSingleTable(byVal x as string)
+
+declare sub cleanUpFormerSession
+declare sub printEveryString(StringArray() as String)
+
+declare Function SearchReplace(ByVal strInput as String, ByVal strReplace as String, ByVal strReplacement as String) as String
+
+Declare Function CreateDirectory Lib "kernel32" Alias "CreateDirectoryA"(ByVal lpPathName As String, ByVal lpSecurityAttributes As Integer) As Integer
+declare Function APICreateDirectory(ByVal szPath As String) As Logical
+
+declare Function TableIsNotOpen (table_name As String) As Logical
+
+declare Function CountRows(ByVal tableName as String) as integer
+
+declare Function CheckTable (table_name As String) As Logical
+
+declare Function CommitEveryTable() as logical
+
+Declare Function SplitStringAtCharacter
+	(ByVal sInput As String 'String to be split into substrings
+	, ByVal sSplitChar As String 'Character used as delimiter (e.g. ",", ";")
+	, sPartsArray() As String 'String array to be populated with the substrings
+	) As Integer 'Number of substrings found in sInput
+	
+Declare Function StringContains(ByVal strInput as String, ByVal charToFind as String) as Logical
+
+Declare function IsTableOpen(table_name as String) as Logical
+declare Function doesnTableExist (table_name As String) As Logical
+declare sub closeIfnotClosed(byVal tableName as string)
+
+declare function createTemporaryTableAndOpen(byVal nameAndStructure as string) as string
+
+declare sub rowIdsFromSelection(rowIds() as integer,byVal tableName as string)
+declare sub rowIndexFromSelection(rowindex() as integer,byVal tableName as string)
+
+'	print j
+'	
+'	print "inArray"
+'	for j = 1 to ubound(inArray1)
+'		print inArray1(j)
+'	next
+'	print "inArray2"
+'	for j = 1 to ubound(inArray2)
+'		print inArray2(j)
+'	next
+'	print "outArray"
+'	for j = 1 to ubound(outArray)
+'		print outArray(j)
+'	next
+declare sub JoinTwoArraysOfIntsIntoThrid(inArray1() as integer,inArray2() as integer,outArray() as integer)
+
+declare sub selectFromTableByArrayOfRowids(byVal tableName as string,rowids() as integer,byVal selectionName as string)
+declare function columnAtindexAsString(tableName as string,columnName as string, indexNr as integer) as string
+
+declare Function arrayAsStringIgnoreEmpty(tableX() as string) as string
+declare Function compareTwoTablesColumns(table1s as string, table2s as string,columnNamesX() as string, columnNamesY() as string) as integer
+declare Function getColumnsOfTable_asString(ByVal tableName as string) as string
+declare Function tidsdialog(i as integer, y as integer,total as integer) as integer
+
+declare sub commitCloseAndReopen(tableName as alias,pathX as string)
+declare Sub getColumnsOfTable_intoArray(ByVal tableName as string,columnNames() as string)
+declare sub increment(iProgress as integer,iProgressRange as integer,starttime as integer)
+
+declare sub opentable(TableArray() as String)
+declare sub removeAtIndex(InputArray() as string,byval removeIndex as integer, outputArray() as string)
+declare sub SilenttidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer)
+declare sub tidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer)
+declare sub _tidssummering(iProgress as integer,starttime as integer,ressultArray() as string)
+
+declare sub removeIndex(tableName as alias)
+declare sub commitAndAdindexColumn(tempAlias as alias)
+
+declare sub combineTwoSelections(motherTable as alias,byVal tableName1 as string, byVal tableName2 as string, byVal outPutTable as string)
+declare sub getRowAtIndexAsArray(tableOfChoiseKir as alias,byval indexNr as integer,tableColumns() as string)
+
+declare function mixedDateToUnion(datumString as string) as string
+
+declare sub updateIndex(byVal tableName as string)
+declare sub mergeTables(värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string,condition as string,byval ressultName as string,composite as logical,byVal compositeString as string)
+
+declare sub runInvertCommit(byval query as string, byVal commitPath as string)
+declare sub openAndRemoveDupes(tablePath as string,byVal tableName as string, byval groupbyColumnsSeparatedWithComma as string)
+
+Declare Function ReturnTrue() as Logical
+'@generateMergestring (värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string) as string
+declare sub sqlPopulateTableWithTable(värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string)
+declare Function generateMergestring (värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string) as string
+
+declare sub addStringToArrayAsifSet(inputArray() as string,byVal addValue as string)
+declare sub addIntToArrayAsifSet(inputArray() as integer, addValue as integer)
+declare sub tableCloser(tableNames() as string)
+declare function ValidatePath(byVal filePath as string) as logical
+declare sub TimePresent(start as integer,endTime as integer,OptionalNumberOf as integer)
+
+declare function isPathOpen(byVal Tpath as string) as logical
+declare function SingletableOpenerConfirmation(byval toOpen as string) as logical
+declare sub closeTableByPath(byVal Tpath as string)
