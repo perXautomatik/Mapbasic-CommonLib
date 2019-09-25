@@ -1,5 +1,5 @@
 Include "MapBasic.def"
-include "G:\sbf\Livsmiljö\Gemensamt\mapbasic program projekt\CommonLib\commonLib1.def"
+include "commonLib1.def"
 
 sub görTillBasTabell(byval tableName as string)
 	dim tempPath as string
