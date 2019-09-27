@@ -1,0 +1,1427 @@
+Include "MapBasic.def"
+include "G:\sbf\Livsmiljö\Gemensamt\mapbasic program projekt\CommonLib\commonLib1.def"
+
+sub görTillBasTabell(byval tableName as string)
+	dim tempPath as string
+	tempPath = TempFileName$("")
+	
+	Commit Table tableName As tempPath TYPE NATIVE Charset "WindowsLatin1" Interactive
+	close table tableName
+	open table tempPath as tableName
+end sub
+
+function görTillBasTabellReturneraPath(byval tableName as string) as string
+	dim tempPath as string
+	dim temp as string temp= TempFileName$("") 
+	tempPath =left$(temp,len(temp)-4) & ".tab"
+	
+	Commit Table tableName As tempPath TYPE NATIVE Charset "WindowsLatin1" Interactive
+	close table tableName
+	görTillBasTabellReturneraPath = tempPath
+	open table tempPath as tableName
+end function
+
+Function tableDoesntIncludeColumns(byval tableName as string,TestColumns() as string) as logical
+	'om len(x) >= len(y) och y intersects x entierly, then return false
+	dim testColIndex,TableColIndex as integer
+	, found as logical
+	, tempAlias as alias
+	, tempString as string
+	found = false 'standard value should be false, as not found column in array
+	
+		
+	for testColIndex = 1 to ubound(TestColumns)
+		
+		for TableColIndex = 1 to tableInfo(tableName, TAB_INFO_NCOLS)
+				
+			if(TestColumns(testColIndex) = Columninfo(tableName,"Col" & TableColIndex,COL_INFO_NAME)) then	
+				found = true 'inner loop stops as fast as column is found, moveing to next
+				goto outOfloop
+			else
+				found = false
+			end if	
+			
+		next
+		outOfloop: 'if found, then the outer loop just continue, else endstepTrigger
+		
+		if not(found) then ' should only trigger if inner loop ever finishes without finiding the column, then the trueclause never triggered and it never left the inner loop prematurely
+			goto endstep
+		End If
+
+	next
+	endStep:
+	
+	tableDoesntIncludeColumns = not(found)
+End function
+
+Function RowColumnAsString(ByVal tableName as String, ByVal columnName as String) as String
+		
+'********************************************************************************************************************
+'* Function:RowColumnAsString
+'* Date: 2018-01-05
+'* Author: Chris DiGiuseppe
+'* get a value from a 1xY matrix
+'********************************************************************************************************************
+		Dim aliasA as Alias
+		Dim aliasB as Alias
+		aliasA = tableName
+		aliasB = columnName
+		select aliasB from aliasA into TempTable
+		Fetch Rec 1 from TempTable	
+		RowColumnAsString = TempTable.col1 & ""
+		close table TempTable
+	End Function
+	
+sub presentRessults()
+
+Dim nWindowID As Integer
+
+	onError goto errorRendering
+		Map From  SwerefFlagga,byggnad_ytaFastighet, ValtEnskiljt, ValtRening, utvaldFastighet, Gotland16
+		nWindowID = FrontWindow()
+		Set Map Window nWindowID  Layer 5  Global Pen (1,2,0)   Global Brush (18,16756912)   Display Global
+		Set Map Window nWindowID  Layer 2 Alpha 107 
+		Set Window nWindowID Enhanced On
+		Set Map Window nWindowID  Layer 5 Selectable Off
+		Set Map Window nWindowID  Layer 4 Selectable Off
+		Set Map Window nWindowID  Layer 3 Selectable Off
+		Set Map Window nWindowID  Layer 2 Selectable Off
+		Set Map Window nWindowID  Layer 1 Selectable Off
+		Set Map Window nWindowID Zoom Entire Layer 2 'zooma ut hela byggnadsytan
+	onError goto 0
+	
+exit sub
+	errorRendering:
+		note "errorRendering: " & error$()
+		resume next
+End Sub
+
+sub GetOpentables(TableArray() as String)
+	Dim j as integer
+	
+	ReDim TableArray(NumTables())
+	For j = 1 to NumTables()
+	    TableArray(j) = Tableinfo(j, TAB_INFO_NAME)
+	Next
+End sub
+
+sub closeAllBut(tableNames() as string)
+	dim CopyOfTableNotToClose(),openTables(),theOpenTable as string
+	dim i,j,k,NrOfTablesNotToClose as integer	
+
+	call GetOpentables(openTables())
+	
+	NrOfTablesNotToClose = ubound(tableNames)+1
+	ReDim CopyOfTableNotToClose(NrOfTablesNotToClose)	
+	CopyOfTableNotToClose(NrOfTablesNotToClose) = "PathTABLE"
+	
+	for K = 1 to NrOfTablesNotToClose-1
+		CopyOfTableNotToClose(K) = tableNames(K)
+	Next	
+	
+	restartLoop:
+	for i = 1 to NumTables()
+		theOpenTable = openTables(i)
+		
+		for j = 1 to NrOfTablesNotToClose
+			if(theOpenTable = CopyOfTableNotToClose(j)) then
+				theOpenTable = ""
+				j = NrOfTablesNotToClose
+			end if
+		next
+		
+		onError goto errorx
+			if not(theOpenTable = "") then
+				close table theOpenTable
+			end if
+		onError goto 0	
+	next
+
+if(false) then
+	errorx:
+		call GetOpentables(openTables())
+	resume restartLoop
+end if
+	
+End Sub
+
+sub tableCloserAndCommiter(tableNames() as string)
+
+	dim openTables() as string
+	,i,j as integer
+	
+	for i = 1 to ubound(tableNames)
+		call getOpentables(openTables)
+		for j = 1 to ubound(openTables)
+			if(opentables(j)=tableNames(i)) then
+				onError goto commitError
+					Commit Table tableNames(i)
+				onError goto 0
+				
+				OnError goto CloseError
+					close table tableNames(i)
+				onError goto 0
+				continueLine:
+			end if
+		Next
+	Next
+exit sub
+
+commitError:
+	note "commitError" & error$()
+	resume continueLine
+
+CloseError:
+	note "CloseError" & error$()
+	resume continueLine
+	
+End Sub
+
+sub removeIndexfromtables(tableNames() as string)
+dim i as integer
+	'error om table inte är öppet
+	for i=1 to ubound(tableNames)
+		commit table tableNames(i)
+		Alter Table tableNames(i) ( drop rowidX ) Interactive
+		commit table tableNames(i)
+	next
+		
+end sub
+
+sub removeIndex(tableName as alias)
+
+dim query as string
+	
+	query = "Alter Table "& tableName & "( drop rowIndex) Interactive"
+	
+	onError goto queryError
+	run command query
+	onError goto 0
+
+	commit table tableName
+
+exit sub
+queryError:
+	print error$()
+	resume next
+
+end sub
+
+sub updateIndex(byVal tableName as string)
+	
+	dim query,query2 as string
+	
+	query = "Alter Table " & tableName & "( drop rowIdX) Interactive"
+	
+	onError goto NoRowIdxError
+		run command query
+	onError goto 0
+
+	query = "Alter Table "& tableName & "( drop rowIndex) Interactive"
+	
+	onError goto NoRowIdxError
+		run command query
+	onError goto 0
+	
+	query = "Alter Table "& tableName & "(add rowIndex Integer) Interactive"
+	query2 = "Update "& tableName & " Set rowIndex = rowid DropIndex Auto"
+	
+	onError goto addError
+		run command query
+		run command query2
+	onError goto 0
+
+	
+	commit table tableName
+	
+exit sub
+NoRowIdxError:
+	resume next
+addError:
+	print error$()
+	end program
+End Sub
+
+'returns true if the path is false
+' false if the path is correct and there is a file
+function ValidatePath(byVal filePath as string) as logical
+		
+	onerror goto error1
+		call closeIfnotClosed("temp")
+		open table filePath as temp
+		
+		if isPathOpen(filePath) then
+			close table temp
+			ValidatePath = true
+		else
+			ValidatePath = false
+		end if
+	onerror goto 0
+	
+exit function
+	error1:
+	print error$()
+	print "pathNotValid: " & filePath
+	ValidatePath = false
+end function
+
+Function IsTableOpen(table_name As String) As Logical
+
+		Dim lcv,num_tables as SmallInt
+
+		num_tables = numTables()
+		IsTableOpen = 0
+
+		For lcv = 1 to num_tables
+			If table_name = tableInfo(lcv,TAB_INFO_NAME) Then
+				IsTableOpen = 1
+				Exit Sub
+			End If
+		Next
+
+End Function
+
+Function doesnTableExist (table_name As String) As Logical
+	doesnTableExist = not(IsTableOpen (table_name))
+End Function
+
+Function TableIsNotOpen (table_name As String) As Logical
+	Dim lcv,num_tables as SmallInt
+
+	num_tables = numTables()
+		
+	For lcv = 1 to num_tables
+		If table_name = tableInfo(lcv,TAB_INFO_NAME) Then
+			TableIsNotOpen = false
+			Exit function
+		End If
+	Next
+	
+	TableIsNotOpen = true
+
+End Function
+
+function isPathOpen(byVal Tpath as string) as logical
+		Dim lcv as SmallInt
+
+		For lcv = 1 to numTables()
+			If Tpath = tableInfo(lcv,Tab_info_tabfile) Then
+				isPathOpen = 1
+				Exit Sub
+			End If
+		Next
+		isPathOpen = 0
+End Function
+
+sub closeTableByPath(byVal Tpath as string)
+	Dim lcv as SmallInt
+
+	For lcv = 1 to numTables()
+		If Tpath = tableInfo(lcv,Tab_info_tabfile) Then
+				close table tableInfo(lcv,tab_info_name)
+			Exit Sub
+		End If
+	Next
+end sub
+
+function SingletableOpenerConfirmation(byval toOpen as string) as logical
+	dim filePath, alternativeName,tpA(1) as string					
+	select alternative,tablePath from PathTABLE where toOpen = TableName into pathTableRefference noSelect
+	
+	if TableInfo(pathTableRefference,TAB_INFO_NROWS) = 0 then 'there is no row entry
+		goto tableNamerror
+	else
+		fetch first from pathTableRefference
+		filePath = pathTableRefference.tablePath
+		
+		if isPathOpen(filePath) then
+			goto alreadyOpenError
+		else 'the table isn't open	
+			alternativeName = pathTableRefference.alternative
+			tpA(1)= alternativeName 'call for alternative		
+			
+			if (not(ValidatePath(filePath))) then
+				if alternativeName = "" then	'eather overwrite alternative path or send noalternativeerror2
+					goto NoAlternativeError2
+				else
+					call tableopener(tpA) 'open alternative reference
+					
+					OnError goto NoAlternativeError
+						Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeTable in the spot of original name
+						close table tpA(1) 'make sure alternativeName table is closed, copie will open later
+					OnError goto 0
+				end if
+			end if
+			
+			onError goto ErrorOpeningErorr
+				Open Table filePath as toOpen
+			onError goto 0
+		end if
+	end if	
+	
+	close table pathTableRefference
+	
+	if(TableIsNotOpen(toOpen)) then 'table is not open
+		goto OpenFailerror	
+	else
+		SingletableOpenerConfirmation = true
+	end if	
+	
+exit function
+OpenFailerror:
+	print "[Error] Failed to open table from specified path; " & filePath & " with specified name; " & toOpen
+	SingletableOpenerConfirmation = false
+tableNamerror:
+	print "[Error] No table avialable with specified name; " & toOpen
+	SingletableOpenerConfirmation = false
+alreadyOpenError:
+	print "[Error] name specified is already open; " & toOpen 
+	SingletableOpenerConfirmation = true
+ErrorOpeningErorr:
+	print "[Error] specified path was an invalid; " & filePath
+	SingletableOpenerConfirmation = false
+NoAlternativeError2:
+	print "Alternative doesn't exist for path; " & filePath
+	SingletableOpenerConfirmation = false
+NoAlternativeError:
+	print " Alternative doesn't exist" & alternativeName & "||"  & error$()
+	SingletableOpenerConfirmation = false
+End function
+
+sub tableOpener(tableNames() as string)
+	dim i as integer	
+	,filePath, alternativeName as string
+	
+	for i = 1 to ubound(tableNames)
+		
+		select alternative,tablePath from PathTABLE where tableNames(i) = TableName into selection2 noSelect
+		Fetch First From selection2
+		filePath = selection2.tablePath
+		
+		if TableInfo(selection2,TAB_INFO_NROWS) <> 0 then 'there is a row entry
+			if TableIsNotOpen(tableNames(i)) AND not(isPathOpen(filePath)) then 'the table isn't open			
+				if (not(ValidatePath(filePath))) then
+					alternativeName = selection2.alternative
+					if(alternativeName <> "") then
+						dim tpA(1) as string
+						tpA(1)= alternativeName 'call for alternative
+						call tableopener(tpA)
+						
+						OnError goto NoAlternativeError
+							Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeName in the spot of original name
+							close table tpA(1) 'make sure alternativeName table is closed, (original) copie will open later
+						OnError goto 0
+					else
+						goto NoAlternativeError2
+					end if
+				end if
+					
+				onError goto ErrorOpeningErorr
+					Open Table filePath as tableNames(i)
+				onError goto 0
+										
+				if(TableIsNotOpen(tableNames(i))) then
+					goto OpenFailerror
+				end if								
+			else
+				if TableIsNotOpen(tableNames(i)) then
+					call closeTableByPath(filePath)
+					call openSingleTable(tableNames(i))
+				end if
+					goto alreadyOpenError
+				else
+			end if
+		else
+			goto tableNamerror
+		end if	
+		
+		'close table selection2
+		nextTable: 'fínish the loop
+	Next
+	
+exit sub
+OpenFailerror:
+	print "[Error] Failed to open table from specified path with specified name"
+	print tableNames(i)
+	print filePath
+	goto nextTable
+tableNamerror:
+	print "[Error] No table avialable with specified name"
+	print tableNames(i)
+	goto nextTable
+alreadyOpenError:
+	print "[Error] name specified is already open"
+	print tableNames(i)
+	goto nextTable
+ErrorOpeningErorr:
+	print "[Error] specified path was an invalid"
+	print filePath
+	goto nextTable
+NoAlternativeError2:
+	note "Alternative doesn't exist for path " & filePath
+	print "@ " & filePath
+	goto nextTable
+NoAlternativeError:
+	note error$() & "||" & alternativeName & " Alternative doesn't exist"
+	resume nextTable
+End Sub
+
+sub cleanUpFormerSession
+	dim tempboolean as logical
+	dim tempCountz as integer
+	tempboolean = CommitEveryTable()
+	'close every window recursivly, for each iteration checking number of windows and closing the relativly last open, without closing the underlying table.
+	for TempCountZ = 1 to NumWindows()
+		onerror goto unableToCloseWindow
+		Close Window WindowID(NumWindows()) 
+	next
+	
+exit sub
+	unableToCloseWindow:
+	note "unableToCloseWindow: " & error$()
+	resume next
+	
+end sub
+
+sub selectFromTableByArrayOfRowids(byVal tableName as string,rowids() as integer,byVal selectionName as string)
+
+	dim selectionString,commandX as string
+	,i,nrOfids as integer
+	nrOfids = ubound(rowids)
+	
+
+	for i = 1 to nrOfIds
+		selectionString = selectionString & "rowid = " & rowids(i)
+		
+		if (nrOfIds > 1 AND i <> nrOfIds) then
+			selectionString = selectionString & " OR "
+		end if
+	next
+	
+	if selectionString <> "" then
+		commandX = "select * from " & tableName & " where " & selectionString & " into " & selectionName
+	else
+		commandX = "select * from " & tableName & " into " & selectionName
+	end if
+	
+	print commandX
+	
+	'print commandX
+	run command commandX
+	
+	'end program
+	
+end sub
+
+sub JoinTwoArraysOfIntsIntoThrid(inArray1() as integer,inArray2() as integer,outArray() as integer)
+	dim i,j,a1,a2 as integer
+	a1 = ubound(inArray1)
+	a2 = ubound(inArray2)
+	
+	redim outArray(a1+a2)
+	
+	j = 1
+	for i = 1 to a1
+		outArray(j) = inArray1(i)
+		j = j + 1
+	Next
+	
+	for i = 1 to a2
+		outArray(j) = inArray2(i)
+		j = j + 1
+	Next
+	
+End Sub
+
+sub rowIdsFromSelection(rowIds() as integer,byVal tableName as string)
+	dim i as integer
+	, utvald,tempAlias2 as alias
+	
+	utvald = tableName
+	
+	fetch first from utvald
+	do until eot(utvald)
+		i = i +1
+		redim rowIds(i)
+		OnError goto NoRowIdxError
+			tempAlias2 = tableName & ".ROWID"
+			rowids(i) = tempAlias2
+		OnError goto 0
+		
+		if false then
+			NoRowIdxError:
+			print error$()
+		End If
+
+		
+		fetch next from utvald
+	loop
+		
+End Sub
+
+sub rowIndexFromSelection(rowindex() as integer,byVal tableName as string)
+	dim i as integer
+	, utvald,tempAlias2 as alias
+	
+	utvald = tableName
+	
+	fetch first from utvald
+	do until eot(utvald)
+		i = i +1
+		redim rowindex(i)
+		OnError goto NoRowIdxError
+			tempAlias2 = tableName & ".rowindex"
+			rowindex(i) = tempAlias2
+		OnError goto 0
+		
+		if false then
+			NoRowIdxError:
+			print error$()
+		End If
+
+		
+		fetch next from utvald
+	loop
+		
+End Sub
+
+function createTemporaryTableAndOpen(byVal nameAndStructure as string) as string
+
+dim tempPath as string
+,query as string
+dim temp as string temp= TempFileName$("") 
+	tempPath = left$(temp,len(temp)-4) & ".tab"
+	
+	onerror goto sqlError
+		query = "Create Table " & nameAndStructure & " file """ & tempPath & """ TYPE NATIVE Charset ""WindowsLatin1"""
+		run Command query
+	onError goto 0
+	
+	Open Table tempPath
+	
+	createTemporaryTableAndOpen = tempPath
+	
+exit function
+	sqlError:
+		note "createTemporaryTableAndOpen E@ " & error$()
+		print query
+		end program
+end function 
+
+Function SearchReplace(ByVal strInput as String, ByVal strReplace as String, ByVal strReplacement as String) as String
+'=========================================
+'// <summary>
+'@ https://gis.stackexchange.com/questions/240034/replace-character-in-string-in-mapbasic
+'// Replace part of a string with another string
+'// </summary>
+'-----------------------------------------
+Dim iPos as Integer
+Dim strOut as String
+Dim i as Integer
+
+    iPos = InStr(1, strInput, strReplace)
+    If iPos < 1 then            '// nothing to replace, return original string
+        SearchReplace = strInput
+        Exit Function
+    End If
+
+    While iPos > 0              '// loop until nothing left to replace
+        If iPos > 1 then
+            strOut = Left$(strInput, iPos - 1)
+        End if
+        strOut = strOut & strReplacement
+        If iPos + Len(strReplace) - 1 < Len(strInput) then
+            strOut = strOut & Mid$(strInput, iPos + Len(strReplace), Len(strInput) - (iPos + Len(strReplace)) + 1)
+        End If
+
+        strInput = strOut
+        iPos = InStr(iPos + 1, strInput, strReplace)
+    Wend
+
+    SearchReplace = strOut
+
+End Function
+
+Function APICreateDirectory(ByVal szPath As String) As Logical
+	'************** CREATE DIRECTORY ********************************************************
+'Bu fonksiyon gonderilen saPath ile ornegin "C:\Deneme" bir klasor yaratir.
+	OnError GoTo ErrorOccured
+	APICreateDirectory = 0
+	'**szPath should not have a backslash at the end
+	If CreateDirectory(szPath, 0) = 0 Then
+	Exit Function
+	End If
+	APICreateDirectory = 1
+	Exit Function
+	'-------------------------
+	ErrorOccured:
+	Note ERR_ERRORMSG & lf & Error$()
+End Function
+
+Function CountRows(ByVal tableName as String) as integer
+	'********************************************************************************************************************
+'* Function:CountRows
+'* Date: 2018-01-05
+'* Author: Chris DiGiuseppe
+'* count number of rows
+'********************************************************************************************************************
+	select count(*) from tableName into TempCount
+			Fetch Rec 1 from TempCount
+			CountRows = TempCount.col1				
+			Close Table TempCount
+	End Function
+
+Function CheckTable (table_name As String) As Logical
+		'********************************************************************************************************************
+'* Function:CheckTable
+'* Date: 1/06/2005
+'* Note: Chris DiGiuseppe
+'* Checks to make sure that a table is valid and may be used by the program
+'********************************************************************************************************************
+		OnError GoTo ErrorOccured
+		CheckTable = 1
+
+		If tableInfo(table_name,TAB_INFO_NCOLS) = 0 Or tableInfo(table_name,TAB_INFO_NROWS) = 0 Then
+			CheckTable = 0
+		ElseIf tableInfo(table_name,TAB_INFO_SEAMLESS)	Then '**Checks if table is seamless
+			CheckTable = 0
+		ElseIf table_name = "Delete_Duplicates_GroupBy_Table" OR table_name like "InternalTable%" Then
+			CheckTable = 0
+		End If
+	ErrorOccured:
+	End Function
+
+Function CommitEveryTable() as logical
+'helperfunction for cleanUpFormerSession
+		Dim num_tables,lcv,num AS SmallInt
+		Dim tname As String
+		Dim tableName as Alias
+		Dim tempLogics as Logical
+
+		num = 1
+		num_tables = NumTables()
+		
+		OnError GoTo ErrorOccured
+		
+		If num_tables > 0 Then
+			For lcv = 1 to num_tables									'**gets the name of each table and adds it to the array
+				tname = TableInfo(lcv,TAB_INFO_NAME)
+				tableName = tname
+				tempLogics = CheckTable(tname) = 1
+				If tempLogics Then							'**Checks to see if table is valid
+					onError goto failedToCommitTable
+						Commit table tableName
+						num = num + 1
+					onError goto 0
+				End If
+				If CheckTable(tname) = 0 Then							'**If table is invalid,does not advance place in array
+					num = num
+				End If
+			Next
+		End If
+	ErrorOccured:
+	CommitEveryTable = true
+	
+	exit function
+		failedToCommitTable:
+		note "failed to commit: " & tableName & " " & error$()
+		resume next
+	
+	End Function
+	
+Function SplitStringAtCharacter(ByVal sInput As String, ByVal sSplitChar As String, sPartsArray() As String) As Integer
+'http://twiav-tt.blogspot.se/2013/05/mapbasic-bespoke-function-to-split.html*********************************************************************************************
+	OnError Goto HandleError
+	
+	Dim iPos, iEnd, iCount As Integer
+	
+	If Len(sInput) = 0 Then
+		SplitStringAtCharacter = 0
+		Exit Function
+	End If
+	    
+	Do While iEnd <= Len(sInput)
+		iPos = iEnd + 1
+		iEnd = InStr(iPos, sInput, sSplitChar)
+		If iEnd = 0 Then
+			iEnd = Len(sInput) + 1
+		End If
+	
+		iCount = iCount + 1
+		ReDim sPartsArray(iCount)
+		sPartsArray(iCount) = Mid$(sInput, iPos, iEnd - iPos)
+	Loop
+	
+	SplitStringAtCharacter = UBound(sPartsArray)
+	
+	Exit Function
+	'---------------------------
+	HandleError:
+	Note Error$()
+
+End Function
+
+Function StringContains(ByVal strInput as String, ByVal charToFind as String) as Logical
+
+Dim iPos as Integer
+Dim strOut as String
+Dim i as Integer
+    iPos = InStr(1, strInput, charToFind)
+    If iPos < 1 then            '// nothing to replace, return original string
+        StringContains = false
+    else
+    	StringContains = true
+    End If
+    
+End Function
+
+sub openSingleTable(byVal tableName as string)
+	dim tempArray(1) as string
+	tempArray(1) = tableName
+	call tableOpener(tempArray)
+end sub
+
+sub closeIfnotClosed(byVal tableName as string)
+		dim iLoop as integer 
+		dim sTbl as string 
+		sTbl = tableName' (table to close) 
+		
+		For iLoop = 1 to numtables() 
+			IF tableinfo(iLoop,1) = sTbl THEN 
+				Close table sTbl 
+				Exit For 
+			END IF 
+		Next 
+End Sub
+
+sub tableCloser(tableNames() as string)
+	dim x as integer
+	
+	for x=1 to ubound(tableNames())
+		if tableNames(x) <> "" then
+			call closeIfnotClosed(tableNames(x))
+		end if
+	next
+end sub
+
+function columnAtindexAsString(tableName as string,columnName as string, indexNr as integer) as string
+	dim rowids(1) as integer
+	rowids(1) = indexNr
+	
+	call selectFromTableByArrayOfRowids(tableName,rowids(),"deleteMeTempTable")
+	
+	columnAtindexAsString = RowColumnAsString("deleteMeTempTable",columnName)
+End Function
+
+sub printEveryString(StringArray() as String)
+	
+	Dim	i As Integer
+		
+		for i = 1 To Ubound(StringArray)
+			print "*" & StringArray(i) & "*"
+		Next
+	
+end sub
+
+sub tidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer)
+	dim ressultArray(2) as string
+	
+	call _tidssummering(IProgress,startTime,ressultArray)
+
+	If CommandInfo(CMD_INFO_STATUS) then
+		If iProgress <= iProgressRange then
+			Note "ended early, got to step: " & ressultArray(1)
+		Else
+			Note "Complete! total time: " & ressultArray(2)
+		End If
+	Else
+	      Note "cancel, got to step: " & ressultArray(1)
+	End If	
+end sub
+
+sub _tidssummering(iProgress as integer,starttime as integer,ressultArray() as string)
+
+	dim endtime,totalTid as integer
+	dim tidsöversikt,canceledString as string
+	endTime = Timer()		
+	totalTid = endTime-startTime
+	tidsÖversikt = totalTid & " | " & ((totalTid)/iProgress) & " sec/step"
+	canceledString = iProgress & "total: " & tidsÖversikt
+	
+	ressultArray(1) = canceledString
+	ressultArray(2) = tidsÖversikt
+
+end sub
+
+sub SilenttidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer)
+
+	dim ressultArray(2) as string
+	
+	call _tidssummering(IProgress,startTime,ressultArray)
+
+	If iProgress <= iProgressRange then
+		print "ended early, got to step: " & ressultArray(1)
+	Else
+		print "Complete! total time: " & ressultArray(2)
+	End If  
+	
+end sub
+
+sub removeAtIndex(InputArray() as string,byval removeIndex as integer, outputArray() as string)
+	dim i,j as integer
+'	print ubound(inputArray)
+	
+	redim outputArray(ubound(inputArray)-1)
+	j = 1
+	for i = 1 to ubound(inputArray)
+'		print "beforeAssign:" & i & "|" & j
+		
+		if(removeIndex <> i) then
+			outputArray(j) = inputArray(i)
+'			print "inserterd" & inputArray(i) & ":" & i & "into" & j
+			j = j + 1
+		end if
+		
+	Next
+	
+End Sub
+
+sub opentable(TableArray() as String)
+	Dim i as integer
+	Dim j as integer
+	i = NumTables()
+	
+	ReDim TableArray(i)
+	For j = 1 to i
+	    TableArray(j) = Tableinfo(j, TAB_INFO_NAME)
+	Next
+
+End sub
+
+Sub getColumnsOfTable_intoArray(ByVal tableName as string,columnNames() as string)
+	dim x as integer
+	dim tempAlias as alias
+	
+	tempAlias = tableName
+		
+	For x=1 to TableInfo(tempAlias, TAB_INFO_NCOLS)
+		redim columnNames(x)
+	    columnNames(x) = ColumnInfo(tempAlias, "col"+str$(x), 1) 
+	Next
+		
+end sub
+
+sub increment(iProgress as integer,iProgressRange as integer,starttime as integer)
+
+	iProgress = iProgress + 1 
+	If iProgress <= iProgressRange Then
+		if iProgress mod 100 = 0 then 'at each hundred incrementetations, short time summery is printed
+			dim	totaltidH,totaltidM,totaltids,upskattad,upskattadH,upskattadM,upskattads as integer
+			,tidperEnhet,totaltid as float
+			
+			totaltid = timer() - starttime	
+			tidperEnhet = totaltid/iprogress		
+			
+			if(totaltid > 3600) then
+				totaltidH = totaltid/3600
+				totaltidM = (totaltid mod 3600) / 60
+				totaltids = (totaltid mod 3600) mod 60
+			else
+				totaltidH = 0
+				if(totaltid > 60) then
+					totaltidM = totaltid / 60
+					totaltids = totaltid mod 60
+				else
+					totaltidM = 0
+					totaltids = totaltid
+				end if
+			end if
+			
+			
+			OnError goto OverflowError
+				upskattad = iProgressRange * tidPerEnhet
+			onError goto 0
+			if false then 
+				overflowError:
+				upskattad = iProgressRange
+			End If
+			
+			upskattadH = upskattad/3600
+			upskattadM = (upskattad mod 3600) / 60
+			upskattads = (upskattad mod 3600) mod 60
+			
+			
+			print iProgress & "upskattat: " & upskattadH & "h" & upskattadM & "m" & upskattads & "s totalt:" & totaltidH & "h" & totaltidM & "m" & totaltids & "s passerade"
+		End If
+		
+		ProgressBar = iProgress
+	Else
+		ProgressBar = -1
+	End If
+
+end sub
+
+sub TimePresent(start as integer,endTime as integer,OptionalNumberOf as integer)
+
+		dim	totaltidH,totaltidM,totaltids,upskattad,upskattadH,upskattadM,upskattads as integer
+		,tidperEnhet,totaltid as float
+		
+		totaltid = endTime - start
+		
+		if OptionalNumberOf <> 0 then
+			tidperEnhet = totaltid/OptionalNumberOf
+		end if
+		
+		if(totaltid > 3600) then
+			totaltidH = totaltid/3600
+			totaltidM = (totaltid mod 3600) / 60
+			totaltids = (totaltid mod 3600) mod 60
+		else
+			totaltidH = 0
+			if(totaltid > 60) then
+				totaltidM = totaltid / 60
+				totaltids = totaltid mod 60
+			else
+				totaltidM = 0
+				totaltids = totaltid
+			end if
+		end if
+		
+		print "upskattat totalt:" & totaltidH & "h" & totaltidM & "m" & totaltids & "s passerade"
+		if OptionalNumberOf <> 0 then
+			print "tidsenheter:" & tidperEnhet
+		end if
+		
+end sub
+
+function compareTwoTablesColumns(table1s as string, table2s as string,columnNamesX() as string, columnNamesY() as string) as integer
+
+	dim returnInteger, i,rowIdTable1,rowIdTable2 as integer
+	,TempAlias, table1,table2 as alias
+	,tempStringX,TempStringY,query as string
+		
+	table1 = table1s
+	table2 = table2s
+	
+	returnInteger = 0
+
+	for i = 1 to ubound(columnNamesX)
+	onerror goto columnFel
+		query = "select " & columnNamesX(i) & " from " & table1 & " where rowid = 1 into joinTable1" 
+		run command query
+		
+		query = "select " & columnNamesY(i) & " from " & table2 & " where rowid = 1 into joinTable2" 
+		run command query
+		
+		fetch first from joinTable1
+		fetch first from joinTable2
+		
+		if not(joinTable1.col1 & "" = joinTable2.col1 & "") then
+			returnInteger = returnInteger + 1
+		end if
+	onerror goto 0
+	next
+
+	compareTwoTablesColumns = returnInteger
+
+exit function
+
+columnFel:
+	print error$()
+	print query
+	for i = 1 to ubound(columnNamesX)
+		print columnNamesX(i) & "|" & columnNamesY(i)
+	next
+	
+resume next
+	
+end function
+
+sub commitAndAdindexColumn(tableName as alias)
+dim query as string
+
+	commit table tableName
+	query = "Alter Table " & tableName & " ( add rowIndex Integer ) Interactive"
+	
+	onError goto queryError
+	run command query
+	onError goto 0
+	
+	query = "Update "& tableName & " Set rowIndex = rowid DropIndex Auto"
+	
+	onError goto queryError
+	run command query
+	onError goto 0
+
+exit sub
+queryError:
+	print error$()
+	resume next
+end sub
+
+sub commitCloseAndReopen(tableName as alias,pathX as string)
+
+		Commit Table tableName As pathX TYPE NATIVE Charset "WindowsLatin1" Interactive
+		close table tableName
+		open table pathX As tableName
+end sub
+
+function tidsdialog(i as integer, y as integer,total as integer) as integer
+	dim textTemp as string
+	dim tidsbegränsning,number as integer
+	
+	number = Y/(i+0.001)
+	Set Format Number "local"
+		
+	textTemp = "poster: " & i & " (" & number & "/per post) " & y/60 & " minuter," & (i+0.001)/total*100 & "%"
+	Dialog
+		control statictext title textTemp
+		
+		Control EditText into tidsbegränsning value 60
+		
+		Control OKButton
+		Control Cancelbutton
+		 
+		If not(CommandInfo(CMD_INFO_DLG_OK)) Then
+			tidsdialog = 0
+			Exit Sub
+		else
+			tidsdialog = Timer() + tidsbegränsning
+		end if
+
+end function
+
+function getColumnsOfTable_asString(ByVal tableName as string) as string
+	dim qM,tableColumns as string
+	dim x as integer
+	dim tempAlias as alias
+	
+	qM = chr$(34)
+	tempAlias = tableName
+	
+	For x=1 to TableInfo(tempAlias, TAB_INFO_NCOLS)
+	    
+	   if(ColumnInfo(tempAlias, "col"+str$(x), COL_INFO_NAME) like "ObjectGeography%") then
+	    	tableColumns = tableColumns & "col"+str$(x)
+	    else
+	    	tableColumns = tableColumns + ColumnInfo(tempAlias, "col"+str$(x), COL_INFO_NAME) 
+	    end if
+	    
+	    if (x < TableInfo(tempAlias, TAB_INFO_NCOLS)) then
+	    	tableColumns = tableColumns + ","
+	    end if
+	Next
+	
+	getColumnsOfTable_asString = tableColumns
+end function
+
+function arrayAsStringIgnoreEmpty(tableX() as string) as string
+	dim x as integer
+	dim returnString as string
+	
+	For x=1 to UBOUND(tableX)
+ 
+ 		if(tableX(x) <> "") then
+	 		returnString = returnString + tableX(x)
+	    	
+	    	if(x < UBOUND(tableX)) then
+	    		returnString = returnString & ","
+	    	end if
+	    end if
+	Next
+	
+	arrayAsStringIgnoreEmpty = returnString
+End Function
+
+sub combineTwoSelections(motherTable as alias,byVal tableName1 as string, byVal tableName2 as string, byVal outPutTable as string)
+	' have to have index on mother table
+' will close table1 and table2
+	dim rowIds1(),rowIds2(),rowIds3() as integer
+	, tableName as alias
+	call rowIndexFromSelection(rowIds1,tableName1)		
+	call rowIndexFromSelection(rowIds2,tableName2)
+	
+	tableName = tableName1
+	'note tableInfo(tableName,TAB_INFO_NROWS)
+	close table tableName
+	tableName = tableName2
+	'note tableInfo(tableName,TAB_INFO_NROWS)
+	close table tableName
+		
+	call joinTwoArraysOfIntsIntoThrid(rowIds1,rowIds2,rowIds3)
+	call selectFromTableByArrayOfRowids(motherTable,rowIds3,outPutTable)
+End Sub
+
+sub getRowAtIndexAsArray(tableOfChoiseKir as alias,byval indexNr as integer,tableColumns() as string)
+	dim tempAlias as alias
+	,x,y as integer
+	redim tableColumns(0)
+
+	For x=1 to TableInfo(TableOfChoiseKir, TAB_INFO_NCOLS)    		
+		tempAlias = TableOfChoiseKir & ".col"+str$(x)
+ 		select tempAlias from TableOfChoiseKir into valdKolumn
+ 		fetch first from valdKolumn
+ 		if(not(valdKolumn.col1 = "")) then
+ 			y = ubound(tableColumns())+1
+ 			redim tableColumns(y)
+ 			tableColumns(y)= valdKolumn.col1
+ 		end if
+	Next
+	
+end sub
+
+Function ReturnTrue() as Logical
+
+	Dim bResult as Logical
+	bResult = Ask("Progress is @ step " & iProgress & ". Do you want the progress bar to Contiue or End?", "Continue", "End")
+	Print "Return True = " & bResult
+	   
+	ReturnTrue = bResult
+
+End Function
+
+function generateMergestring (värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string) as string
+onerror goto strangeError
+	dim allaColumner(),qm,mergeString,jVärde,allaColumnerI as string
+	, i,j,uBoundaCol as integer
+	,found,tempBoolean as logical
+	
+	call getColumnsOfTable_intoArray(insertInto,allaColumner)
+	
+	qM = chr$(34)
+	mergeString = ""
+	uBoundaCol = ubound(allaColumner)
+
+	for i = 1 to uBoundaCol
+	
+		allaColumnerI = allaColumner(i)
+		found = false
+				
+		for j = 1 to ubound(påPlatts)
+		
+			jVärde = värde(j) & ""
+			tempBoolean = (allaColumnerI = påPlatts(j))
+		
+			if tempBoolean then
+				tempBoolean = (jVärde <> "")
+			
+				if tempBoolean then
+					mergeString = mergeString & fromTable & "." 'to compensate for composit columns
+				end if
+				
+				mergeString = mergeString & jVärde & " " & qm & allaColumnerI & qm
+				found = true		
+			end if
+		next
+		
+		tempBoolean = (found = false)
+		
+		if tempBoolean then
+			mergeString = mergeString & insertInto  & "." & allaColumnerI
+		end if
+		
+		if i < uBoundaCol then
+			mergeString = mergeString & ","
+		end if
+	next
+		
+	generateMergeString = mergeString
+onerror goto 0	
+exit function
+	strangeError:
+		print ubound(värde) & "|" & error$()
+		end program
+		resume next
+end function
+
+sub mergeTables(värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string,condition as string,byval ressultName as string,composite as logical,byVal compositeString as string)
+	dim query,värdeUtanFörsta(),påPlattsUtanFörsta(),qm as string
+	,i as integer
+	qM = chr$(34)
+	query = "select "
+	if composite then
+		query = query & compositeString
+	end if
+
+	query = query & generateMergestring(värde,påPlatts,insertinto,fromTable) & " FROM " & insertInto & "," & fromTable & " WHERE " & condition & " INTO " & ressultName	
+	'print query 'debug
+	
+	onError goto queryError
+		run command query
+	onError goto 0
+	
+exit sub
+
+	queryError:
+		print "queryError:" & error$()
+		print query	
+		resume next
+end sub
+
+sub sqlPopulateTableWithTable(värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string)
+	dim query as string
+	
+	query = "Insert Into "& insertinto &" (" & arrayAsStringIgnoreEmpty(påPlatts) & ") Select " & arrayAsStringIgnoreEmpty(värde) & " From " & fromTable & " DropIndex Auto"
+	onerror goto queryError
+		run command query
+	onerror goto 0
+	
+exit sub
+
+queryError:
+	print error$()
+	print query
+	end program
+
+end sub	
+
+sub openAndRemoveDupes(tablePath as string,byVal tableName as string, byval groupbyColumnsSeparatedWithComma as string)
+	dim query1,query2 as string
+	,i as integer
+	open table tablePath & tableName & ".tab" as tableToDedupe
+	print tableToDedupe & " rader innan dedupe: " & tableINfo(tableToDedupe,8)
+	query1 = "UPDATE tableToDedupe SET dataLängd = "
+		for i = 1 to tableInfo(tableToDedupe,TAB_INFO_NCOLS)
+			query1 = query1 & "len(Col" & i & ") + "
+		next
+	query1 = query1 & "0"
+	Alter Table "tableToDedupe" ( add dataLängd Integer ) Interactive
+	query2 = "SELECT " & getColumnsOfTable_asString("tableToDedupe") &", MAX (dataLängd) FROM tableToDedupe Group BY "& groupbyColumnsSeparatedWithComma &" INTO tableToDedupeUtanDubbletter"
+	
+	onerror goto queryError1
+		run command query1 
+	onerror goto 0
+	
+	onerror goto queryError2
+		run command query2 
+	onerror goto 0
+	
+	commit table tableToDedupeUtanDubbletter as tablePath & "temp.tab"
+	close table tableToDedupe
+	open table tablePath & "temp.tab" as tableName
+	commit table tableName as tablePath & tableName & ".tab"
+	close table tableName
+	open table tablePath & tableName & ".tab"
+	print " rader efter dedupe: " & tableINfo(tableName,8)
+exit sub
+queryError1:
+	print "queryError:" & error$()
+	print query1
+	resume next
+queryError2:
+	print "queryError:" & error$()
+	print query2
+	resume next
+end sub
+
+sub runInvertCommit(byval query as string, byVal commitPath as string)
+
+	onError goto queryError
+		run command query
+	onError goto 0
+	
+	Run Menu Command 311 'aka 311 in the Menu.def
+	Commit Table selection As commitPath
+	open table commitPath
+			
+exit sub
+	
+queryError:
+		print "Qer: " & error$() & TableOfChoiseKir.kir
+		print query	
+end sub
+
+sub addStringToArrayAsifSet(inputArray() as string,byVal insertvalue as string)
+	dim found as logical
+	,antal,x as integer
+	,addvalue as string
+	antal = ubound(inputArray)
+	found = false
+	
+	addvalue = RTrim$(LTrim$(UCase$(insertvalue)))
+	
+	if addvalue <> "" then
+
+		for x=1 to antal
+			if(inputArray(x) = addValue) then
+				found = true
+			end if
+		next
+			
+		if(not(found) OR antal = 0) then
+			redim inputArray(antal+1)
+			inputArray(antal+1) = addvalue
+		end if
+	end if	
+end sub
+
+sub addIntToArrayAsifSet(inputArray() as integer, addValue as integer)
+	dim found as logical
+	,antal,x as integer
+	antal = ubound(inputArray)
+	found = false
+	
+	for x=1 to antal
+		if(inputArray(x) = addValue) then
+			found = true
+		end if
+	next
+		
+	if(not(found)) then
+		redim inputArray(antal+1)
+		inputArray(antal+1) = addvalue
+	end if
+
+end sub
+
+function mixedDateToUnion(datumString as string) as string
+	dim tempInteger,i,theYear,theMonth,theDay as integer
+	,sPartsArray(),sPartsArray2(),cleanedNumber,ressultString,PaddedMonth,PaddedDay,tempstring as string
+	
+	tempInteger = SplitStringAtCharacter(datumString & "", "-", sPartsArray2())
+	if (tempInteger = 3) OR (val("" & datumstring) & "" = datumstring AND (len(datumstring) = 8 OR len(datumstring) = 6)) then
+		if tempInteger = 1 then
+			tempInteger = SplitStringAtCharacter(datumString & "", "/", sPartsArray2())
+		end if
+		
+		if tempInteger = 1 then
+			tempInteger = SplitStringAtCharacter(datumString & "", " ", sPartsArray2())
+		end if
+		
+		if(tempinteger = 1) then
+			call addStringToArrayAsifSet(sPartsArray2(),left$(datumstring,len(datumstring)-4))
+			call addStringToArrayAsifSet(sPartsArray2(),left$(right$(datumstring,4),2))
+			call addStringToArrayAsifSet(sPartsArray2(),right$(datumString,2)) 
+		end if
+		
+		for i = 1 to ubound(sPartsArray2)
+			if sPartsArray2(i) <> datumString then
+				call addStringToArrayAsifSet(sPartsArray(),sPartsArray2(i))
+			end if
+		next
+		
+		ressultString = "0"
+		
+		for i = 1 to ubound(sPartsArray)
+			do case i
+			case 1
+				TheYear = val("" & spartsArray(i))'MapInfo Pro uses the current century
+				TheYear = TheYear + iif(theYear > 100,0,iif(theYear > 20,1900,2000))
+				tempinteger = iif(theYear > 0 AND theYear < 3000,tempinteger,1)
+			case 2
+				theMonth = val(spartsArray(i))
+				theMonth = iif(val("" & theMonth) < 10,"0" & theMonth,theMonth)
+				tempinteger = iif(val("" & theMonth) > 0 AND val("" & theMonth) < 12,tempinteger,1)
+			case 3
+				theDay = val("" & spartsArray(i))
+				PaddedDay = iif(theDay < 10,"0" & theDay,theDay & "")
+				tempinteger = iif(val("" & theDay) > 0 AND val("" & theDay) < 31,tempinteger,1)
+				ressultString = iif(tempInteger = 0,theYear & theMonth & PaddedDay,ressultString)
+			end case
+		next
+		
+		mixedDateToUnion = ressultString
+	else
+		mixedDateToUnion = "0"
+	end if
+End function
