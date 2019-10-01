@@ -362,25 +362,32 @@ function SingletableOpenerConfirmation(byval toOpen as string) as logical
 	'table is not open
 	if(TableIsNotOpen(toOpen)) then goto OpenFailerror	else	SingletableOpenerConfirmation = true	end if	
 	
+	endFunction:
 exit function
 OpenFailerror:
 	print "[Error_SingletableOpenerConfirmation] Failed to open table from specified path; " & filePath & " with specified name; " & toOpen
 	SingletableOpenerConfirmation = false
+	goto endFunction
 tableNamerror:
 	print "[Error_SingletableOpenerConfirmation] No table avialable with specified name; " & toOpen
 	SingletableOpenerConfirmation = false
+	goto endFunction
 alreadyOpenError:
 	print "[Error_SingletableOpenerConfirmation] name specified is already open; " & toOpen 
 	SingletableOpenerConfirmation = true
+	goto endFunction
 ErrorOpeningErorr:
 	print "[Error_SingletableOpenerConfirmation] specified path was invalid; " & filePath
 	SingletableOpenerConfirmation = false
+	goto endFunction
 NoAlternativeError2:
 	print "[Error_SingletableOpenerConfirmation] Alternative doesn't exist for path; " & filePath
 	SingletableOpenerConfirmation = false
+	goto endFunction
 NoAlternativeError:
 	print "[Error_SingletableOpenerConfirmation] Alternative doesn't exist" & alternativeName & "||"  & error$()
 	SingletableOpenerConfirmation = false
+	goto endFunction
 End function
 
 sub tableOpener(tableNames() as string)
