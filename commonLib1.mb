@@ -324,6 +324,7 @@ sub closeTableByPath(byVal Tpath as string)
 	Next
 end sub
 
+'opens a single table and return boolean if successfully opened
 function SingletableOpenerConfirmation(byval toOpen as string) as logical
 	dim filePath, alternativeName,tpA(1) as string					
 	select alternative,tablePath from PathTABLE where toOpen = TableName into pathTableRefference noSelect
@@ -353,38 +354,32 @@ function SingletableOpenerConfirmation(byval toOpen as string) as logical
 				end if
 			end if
 			
-			onError goto ErrorOpeningErorr
-				Open Table filePath as toOpen
-			onError goto 0
+			onError goto ErrorOpeningErorr Open Table filePath as toOpen onError goto 0
 		end if
 	end if	
 	
 	close table pathTableRefference
-	
-	if(TableIsNotOpen(toOpen)) then 'table is not open
-		goto OpenFailerror	
-	else
-		SingletableOpenerConfirmation = true
-	end if	
+	'table is not open
+	if(TableIsNotOpen(toOpen)) then goto OpenFailerror	else	SingletableOpenerConfirmation = true	end if	
 	
 exit function
 OpenFailerror:
-	print "[Error] Failed to open table from specified path; " & filePath & " with specified name; " & toOpen
+	print "[Error_SingletableOpenerConfirmation] Failed to open table from specified path; " & filePath & " with specified name; " & toOpen
 	SingletableOpenerConfirmation = false
 tableNamerror:
-	print "[Error] No table avialable with specified name; " & toOpen
+	print "[Error_SingletableOpenerConfirmation] No table avialable with specified name; " & toOpen
 	SingletableOpenerConfirmation = false
 alreadyOpenError:
-	print "[Error] name specified is already open; " & toOpen 
+	print "[Error_SingletableOpenerConfirmation] name specified is already open; " & toOpen 
 	SingletableOpenerConfirmation = true
 ErrorOpeningErorr:
-	print "[Error] specified path was an invalid; " & filePath
+	print "[Error_SingletableOpenerConfirmation] specified path was an invalid; " & filePath
 	SingletableOpenerConfirmation = false
 NoAlternativeError2:
-	print "Alternative doesn't exist for path; " & filePath
+	print "[Error_SingletableOpenerConfirmation] Alternative doesn't exist for path; " & filePath
 	SingletableOpenerConfirmation = false
 NoAlternativeError:
-	print " Alternative doesn't exist" & alternativeName & "||"  & error$()
+	print "[Error_SingletableOpenerConfirmation] Alternative doesn't exist" & alternativeName & "||"  & error$()
 	SingletableOpenerConfirmation = false
 End function
 
@@ -441,28 +436,28 @@ sub tableOpener(tableNames() as string)
 	
 exit sub
 OpenFailerror:
-	print "[Error] Failed to open table from specified path with specified name"
+	print "[Error_tableOpener] Failed to open table from specified path with specified name"
 	print tableNames(i)
 	print filePath
 	goto nextTable
 tableNamerror:
-	print "[Error] No table avialable with specified name"
+	print "[Error_tableOpener] No table avialable with specified name"
 	print tableNames(i)
 	goto nextTable
 alreadyOpenError:
-	print "[Error] name specified is already open"
+	print "[Error_tableOpener] name specified is already open"
 	print tableNames(i)
 	goto nextTable
 ErrorOpeningErorr:
-	print "[Error] specified path was an invalid"
+	print "[Error_tableOpener] specified path was an invalid"
 	print filePath
 	goto nextTable
 NoAlternativeError2:
 	note "Alternative doesn't exist for path " & filePath
-	print "@ " & filePath
+	print "[Error_tableOpener]@ " & filePath
 	goto nextTable
 NoAlternativeError:
-	note error$() & "||" & alternativeName & " Alternative doesn't exist"
+	note "[Error_tableOpener]" & error$() & "||" & alternativeName & " Alternative doesn't exist"
 	resume nextTable
 End Sub
 
