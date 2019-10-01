@@ -373,7 +373,7 @@ alreadyOpenError:
 	print "[Error_SingletableOpenerConfirmation] name specified is already open; " & toOpen 
 	SingletableOpenerConfirmation = true
 ErrorOpeningErorr:
-	print "[Error_SingletableOpenerConfirmation] specified path was an invalid; " & filePath
+	print "[Error_SingletableOpenerConfirmation] specified path was invalid; " & filePath
 	SingletableOpenerConfirmation = false
 NoAlternativeError2:
 	print "[Error_SingletableOpenerConfirmation] Alternative doesn't exist for path; " & filePath
@@ -388,53 +388,58 @@ sub tableOpener(tableNames() as string)
 	,filePath, alternativeName as string
 	
 	for i = 1 to ubound(tableNames)
-		
-		select alternative,tablePath from PathTABLE where tableNames(i) = TableName into selection2 noSelect
-		Fetch First From selection2
-		filePath = selection2.tablePath
-		
-		if TableInfo(selection2,TAB_INFO_NROWS) <> 0 then 'there is a row entry
-			if TableIsNotOpen(tableNames(i)) AND not(isPathOpen(filePath)) then 'the table isn't open			
-				if (not(ValidatePath(filePath))) then
-					alternativeName = selection2.alternative
-					if(alternativeName <> "") then
-						dim tpA(1) as string
-						tpA(1)= alternativeName 'call for alternative
-						call tableopener(tpA)
-						
-						OnError goto NoAlternativeError
-							Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeName in the spot of original name
-							close table tpA(1) 'make sure alternativeName table is closed, (original) copie will open later
-						OnError goto 0
-					else
-						goto NoAlternativeError2
+		if tableNames(i) <> "" then
+			select alternative,tablePath from PathTABLE where tableNames(i) = TableName into selection2 noSelect
+			Fetch First From selection2
+			filePath = selection2.tablePath
+			
+			if TableInfo(selection2,TAB_INFO_NROWS) <> 0 then 'there is a row entry
+				if TableIsNotOpen(tableNames(i)) AND not(isPathOpen(filePath)) then 'the table isn't open			
+					if (not(ValidatePath(filePath))) then
+						alternativeName = selection2.alternative
+						if(alternativeName <> "") then
+							dim tpA(1) as string
+							tpA(1)= alternativeName 'call for alternative
+							call tableopener(tpA)
+							
+							OnError goto NoAlternativeError
+								Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeName in the spot of original name
+								close table tpA(1) 'make sure alternativeName table is closed, (original) copie will open later
+							OnError goto 0
+						else
+							goto NoAlternativeError2
+						end if
 					end if
-				end if
-					
-				onError goto ErrorOpeningErorr
-					Open Table filePath as tableNames(i)
-				onError goto 0
-										
-				if(TableIsNotOpen(tableNames(i))) then
-					goto OpenFailerror
-				end if								
-			else
-				if TableIsNotOpen(tableNames(i)) then
-					call closeTableByPath(filePath)
-					call openSingleTable(tableNames(i))
-				end if
-					goto alreadyOpenError
+						
+					onError goto ErrorOpeningErorr
+						Open Table filePath as tableNames(i)
+					onError goto 0
+											
+					if(TableIsNotOpen(tableNames(i))) then
+						goto OpenFailerror
+					end if								
 				else
-			end if
+					if TableIsNotOpen(tableNames(i)) then
+						call closeTableByPath(filePath)
+						call openSingleTable(tableNames(i))
+					end if
+						goto alreadyOpenError
+					else
+				end if
+			else
+				goto tableNamerror
+			end if	
 		else
-			goto tableNamerror
-		end if	
-		
+			goto EmptyEntryError
+		end if
 		'close table selection2
 		nextTable: 'fínish the loop
 	Next
 	
 exit sub
+EmptyEntryError:
+	print "[Error_tableOpener] EmptyEntry submitted @" & i 
+	goto nextTable
 OpenFailerror:
 	print "[Error_tableOpener] Failed to open table from specified path with specified name"
 	print tableNames(i)
@@ -445,11 +450,11 @@ tableNamerror:
 	print tableNames(i)
 	goto nextTable
 alreadyOpenError:
-	print "[Error_tableOpener] name specified is already open"
+	print "[Warning_tableOpener] name specified is already open"
 	print tableNames(i)
 	goto nextTable
 ErrorOpeningErorr:
-	print "[Error_tableOpener] specified path was an invalid"
+	print "[Error_tableOpener] specified path was invalid"
 	print filePath
 	goto nextTable
 NoAlternativeError2:
