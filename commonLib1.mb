@@ -305,6 +305,19 @@ function isPathOpen(byVal Tpath as string) as logical
 		Next
 End Function
 
+function tableNameByPath(byVal Tpath as string) as string
+		Dim lcv as SmallInt
+		
+		tableNameByPath = ""
+		For lcv = 1 to numTables()
+			If Tpath = tableInfo(lcv,Tab_info_tabfile) Then
+				tableNameByPath = tableInfo(lcv,Tab_info_name)
+				Exit Sub
+			End If
+		Next
+End Function
+
+
 sub closeTableByPath(byVal Tpath as string)
 	Dim lcv as SmallInt
 
@@ -334,9 +347,9 @@ function openTableAndConfirm(byval toOpen as string) as logical
 			if debug then print "row entry" end if
 			fetch first from pathTableRefference filePath = pathTableRefference.tablePath	
 		
-			if (ValidateNClosePath(filePath)) then
+			if (isPathOpen(filePath)) then
 				if debug then print "path is open elsewhereError" end if
-				goto PathAlreadyOpenedError 'path is open elsewhere
+				goto PathAlreadyOpenedError 'path is open elsewhere			
 			end if	
 				openStep:
 				if debug then print "openStep" end if
@@ -385,8 +398,8 @@ tableNamerror:
 	openTableAndConfirm = false
 	goto endFunction
 PathAlreadyOpenedError:
-	print "[warning_openTableAndConfirm] Path was opened under another name"
-	resume next
+	print "[warning_openTableAndConfirm] Path " & filePath & " was opened under another name: " & tableNameByPath(toOpen)
+	goto openStep
 alreadyOpenError:
 	print "[Warning_openTableAndConfirm] name specified is already open; " & toOpen 
 	openTableAndConfirm = true
