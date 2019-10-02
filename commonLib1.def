@@ -49,9 +49,6 @@ declare sub rowIdsFromSelection(rowIds() as integer,byVal tableName as string)
 declare sub rowIndexFromSelection(rowindex() as integer,byVal tableName as string)
 
 '	print j
-declare function findInINTArray(byVal värde as integer, array() as integer) as logical
-
-declare function findInStringArray(byVal värde as string, array() as string) as logical
 '	
 '	print "inArray"
 '	for j = 1 to ubound(inArray1)
@@ -69,17 +66,12 @@ declare sub JoinTwoArraysOfIntsIntoThrid(inArray1() as integer,inArray2() as int
 
 declare sub selectFromTableByArrayOfRowids(byVal tableName as string,rowids() as integer,byVal selectionName as string)
 declare function columnAtindexAsString(tableName as string,columnName as string, indexNr as integer) as string
-'<<<<<<< HEAD
-declare sub removeFromIntArray(array() as integer,värde as integer)
-'=======
 declare function StringArrayAsString(tableX() as string) as string
-'>>>>>>> master
 
 declare Function arrayAsStringIgnoreEmpty(tableX() as string) as string
 declare Function compareTwoTablesColumns(table1s as string, table2s as string,columnNamesX() as string, columnNamesY() as string) as integer
 declare Function getColumnsOfTable_asString(ByVal tableName as string) as string
 declare Function tidsdialog(i as integer, y as integer,total as integer) as integer
-declare function intArrayAsPrintString(tableX() as integer) as string
 
 declare sub commitCloseAndReopen(tableName as alias,pathX as string)
 declare Sub getColumnsOfTable_intoArray(ByVal tableName as string,columnNames() as string)
@@ -133,8 +125,8 @@ declare function IFSAMEoneDIFFRENTzeroONEBLANKhalf(byVal valX as string,byVal va
 declare function XOR(byVal a as logical, byVal b as logical) as logical
 
 declare function getPathFromPathTable(byVal tableName as string) as string
-'declare function findInINTArray(byVal värde as integer, array() as integer) as logical
-'declare function findInStringArray(byVal värde as string, array() as string) as logical
-'declare function intArrayAsPrintString(tableX() as integer) as string
-'declare sub removeFromIntArray(array() as integer,värde as integer)
+declare function findInINTArray(byVal värde as integer, array() as integer) as logical
+declare function findInStringArray(byVal värde as string, array() as string) as logical
+declare function intArrayAsPrintString(tableX() as integer) as string
+declare sub removeFromIntArray(array() as integer,värde as integer)
 declare function sqlPart_ColNrs(byVal nr as integer) as string
