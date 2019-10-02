@@ -130,3 +130,4 @@ declare function findInStringArray(byVal värde as string, array() as string) as 
 declare function intArrayAsPrintString(tableX() as integer) as string
 declare sub removeFromIntArray(array() as integer,värde as integer)
 declare function sqlPart_ColNrs(byVal nr as integer) as string
+declare function tableNameByPath(byVal Tpath as string) as string
