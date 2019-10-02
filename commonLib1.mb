@@ -318,43 +318,44 @@ end sub
 
 'opens a single table and return boolean if successfully opened
 function openTableAndConfirm(byval toOpen as string) as logical
-	dim filePath, alternativeName,tpA(1) as string					
+	dim filePath, alternativeName,tpA(1) as string, debug as logical					
 
-	if isPathOpen(filePath) then
-		print "alreadyOpenError"
+	debug = false
+	if IsTableOpen(filePath) then
+		if debug then print "alreadyOpenError" end if
 		goto alreadyOpenError
 	else 'the table isn't open
-		print "Notalready"
+		if debug then print "Notalready" end if
 		select alternative,tablePath from PathTABLE where toOpen = TableName into pathTableRefference noSelect 
 		if TableInfo(pathTableRefference,TAB_INFO_NROWS) = 0 then 'there is no row entry
-			print "no row entryError"
+			if debug then print "no row entryError" end if
 			goto tableNamerror 'there is no table reference
 		else
-			print "row entry"
+			if debug then print "row entry" end if
 			fetch first from pathTableRefference filePath = pathTableRefference.tablePath	
 		
 			if (ValidateNClosePath(filePath)) then
-				print "path is open elsewhereError"	
+				if debug then print "path is open elsewhereError" end if
 				goto PathAlreadyOpenedError 'path is open elsewhere
 			end if	
 				openStep:
-				print "openStep"
+				if debug then print "openStep" end if
 				
 				Open Table filePath as toOpen
 				
 			
 				if(TableIsNotOpen(toOpen)) then 
-					print "the table is not open, resorting to alternative"
+					if debug then print "the table is not open, resorting to alternative" end if
 					alternativeName = pathTableRefference.alternative 
 					if alternativeName = "" then	'eather overwrite alternative path or send noalternativeerror2
-						print "no alternative"
+						if debug then print "no alternative" end if
 						goto NoAlternativeError2
 					else
 						if not(openTableAndConfirm(alternativeName)) then  'open alternative reference
-							print "tryed open with recursion, but failed"
+							if debug then print "tryed open with recursion, but failed" end if
 							goto NoAlternativeError3
 						else	'if it did succeede to open the alternative path
-							print "succeede to open the alternative path"
+							if debug then print "succeede to open the alternative path" end if
 							OnError goto UnAbleToCreateError
 								Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeTable in the spot of original name
 								close table tpA(1) 'make sure alternativeName table is closed, copie will open later
