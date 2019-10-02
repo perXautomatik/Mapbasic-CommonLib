@@ -320,40 +320,52 @@ end sub
 function openTableAndConfirm(byval toOpen as string) as logical
 	dim filePath, alternativeName,tpA(1) as string					
 
-	if isPathOpen(filePath) then goto alreadyOpenError else 'the table isn't open
+	if isPathOpen(filePath) then
+		print "alreadyOpenError"
+		goto alreadyOpenError
+	else 'the table isn't open
+		print "Notalready"
 		select alternative,tablePath from PathTABLE where toOpen = TableName into pathTableRefference noSelect 
 		if TableInfo(pathTableRefference,TAB_INFO_NROWS) = 0 then 'there is no row entry
+			print "no row entryError"
 			goto tableNamerror 'there is no table reference
-		else 
+		else
+			print "row entry"
 			fetch first from pathTableRefference filePath = pathTableRefference.tablePath	
 		
 			if (ValidateNClosePath(filePath)) then
+				print "path is open elsewhereError"	
 				goto PathAlreadyOpenedError 'path is open elsewhere
-			end if
+			end if	
 				openStep:
-				onError goto ErrorOpeningErorr
-					Open Table filePath as toOpen
-					openTableAndConfirm = true
-					exit function
-				onError goto 0
+				print "openStep"
 				
-				alternativeName = pathTableRefference.alternative 
-				if alternativeName = "" then	'eather overwrite alternative path or send noalternativeerror2
-					goto NoAlternativeError2
-				else
-					if not(openTableAndConfirm(alternativeName)) then  'open alternative reference
-						goto NoAlternativeError3
-					else	'if it did succeede to open the alternative path
-						OnError goto UnAbleToCreateError
-							Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeTable in the spot of original name
-							close table tpA(1) 'make sure alternativeName table is closed, copie will open later
-						OnError goto 0
-						goto openStep
+				Open Table filePath as toOpen
+				
+			
+				if(TableIsNotOpen(toOpen)) then 
+					print "the table is not open, resorting to alternative"
+					alternativeName = pathTableRefference.alternative 
+					if alternativeName = "" then	'eather overwrite alternative path or send noalternativeerror2
+						print "no alternative"
+						goto NoAlternativeError2
+					else
+						if not(openTableAndConfirm(alternativeName)) then  'open alternative reference
+							print "tryed open with recursion, but failed"
+							goto NoAlternativeError3
+						else	'if it did succeede to open the alternative path
+							print "succeede to open the alternative path"
+							OnError goto UnAbleToCreateError
+								Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeTable in the spot of original name
+								close table tpA(1) 'make sure alternativeName table is closed, copie will open later
+							OnError goto 0
+							goto openStep
+						end if
 					end if
 				end if
 		end if
 	end if
-	
+		
 	if(TableIsNotOpen(toOpen)) then 
 		goto OpenFailerror 'table is not open
 	else
