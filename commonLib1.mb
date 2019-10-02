@@ -244,7 +244,7 @@ End Sub
 
 'returns true if the path is false
 ' false if the path is correct and there is a file
-function ValidatePath(byVal filePath as string) as logical
+function ValidateNClosePath(byVal filePath as string) as logical
 		
 	onerror goto error1
 		call closeIfnotClosed("temp")
@@ -252,9 +252,9 @@ function ValidatePath(byVal filePath as string) as logical
 		
 		if isPathOpen(filePath) then
 			close table temp
-			ValidatePath = true
+			ValidateNClosePath = true
 		else
-			ValidatePath = false
+			ValidateNClosePath = false
 		end if
 	onerror goto 0
 	
@@ -262,7 +262,7 @@ exit function
 	error1:
 	print error$()
 	print "pathNotValid: " & filePath
-	ValidatePath = false
+	ValidateNClosePath = false
 end function
 
 Function IsTableOpen(table_name As String) As Logical
@@ -304,13 +304,13 @@ End Function
 function isPathOpen(byVal Tpath as string) as logical
 		Dim lcv as SmallInt
 
+		isPathOpen = 0
 		For lcv = 1 to numTables()
 			If Tpath = tableInfo(lcv,Tab_info_tabfile) Then
 				isPathOpen = 1
 				Exit Sub
 			End If
 		Next
-		isPathOpen = 0
 End Function
 
 sub closeTableByPath(byVal Tpath as string)
@@ -325,84 +325,102 @@ sub closeTableByPath(byVal Tpath as string)
 end sub
 
 'opens a single table and return boolean if successfully opened
-function SingletableOpenerConfirmation(byval toOpen as string) as logical
-	dim filePath, alternativeName,tpA(1) as string					
-	select alternative,tablePath from PathTABLE where toOpen = TableName into pathTableRefference noSelect
-	
-	if TableInfo(pathTableRefference,TAB_INFO_NROWS) = 0 then 'there is no row entry
-		goto tableNamerror
-	else
-		fetch first from pathTableRefference
-		filePath = pathTableRefference.tablePath
-		
-		if isPathOpen(filePath) then
-			goto alreadyOpenError
-		else 'the table isn't open	
-			alternativeName = pathTableRefference.alternative
-			tpA(1)= alternativeName 'call for alternative		
-			
-			if (not(ValidatePath(filePath))) then
+function openTableAndConfirm(byval toOpen as string) as logical
+	dim 
+	filePath, alternativeName,tpA(1) as string					
+	if isPathOpen(filePath) then
+		goto alreadyOpenError
+	else 'the table isn't open
+
+		select alternative,tablePath from PathTABLE where 
+		toOpen
+		 = TableName into 
+		 pathTableRefference 
+		 noSelect
+	 
+		if TableInfo(pathTableRefference,TAB_INFO_NROWS) = 0 then 'there is no row entry
+			goto tableNamerror 'there is no table reference
+		else 
+			fetch first from pathTableRefference filePath = pathTableRefference.tablePath	
+			if (ValidateNClosePath(filePath)) then 
+				goto PathAlreadyOpenedError 'path is open elsewhere
+			else
+				alternativeName = pathTableRefference.alternative
+
 				if alternativeName = "" then	'eather overwrite alternative path or send noalternativeerror2
 					goto NoAlternativeError2
 				else
-					call tableopener(tpA) 'open alternative reference
-					
-					OnError goto NoAlternativeError
-						Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeTable in the spot of original name
-						close table tpA(1) 'make sure alternativeName table is closed, copie will open later
-					OnError goto 0
+					if not(openTableAndConfirm(alternativeName)) then  'open alternative reference
+						goto NoAlternativeError3
+					else	'if it did succeede to open the alternative path
+						OnError goto NoAlternativeError
+							Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeTable in the spot of original name
+							close table tpA(1) 'make sure alternativeName table is closed, copie will open later
+						OnError goto 0
+					end if
 				end if
 			end if
-			
-			onError goto ErrorOpeningErorr Open Table filePath as toOpen onError goto 0
 		end if
-	end if	
+	end if
+						
+	onError goto ErrorOpeningErorr 
+		Open Table filePath as toOpen
+	 onError goto 0
 	
+	if(TableIsNotOpen(toOpen)) then 
+		goto OpenFailerror
+	else
+		openTableAndConfirm = true
+	end if		
+	endFunction:
 	close table pathTableRefference
 	'table is not open
-	if(TableIsNotOpen(toOpen)) then goto OpenFailerror	else	SingletableOpenerConfirmation = true	end if	
-	
-	endFunction:
+
 exit function
 OpenFailerror:
-	print "[Error_SingletableOpenerConfirmation] Failed to open table from specified path; " & filePath & " with specified name; " & toOpen
-	SingletableOpenerConfirmation = false
+	print "[Error_openTableAndConfirm] Failed to open table from specified path; " & filePath & " with specified name; " & toOpen
+	openTableAndConfirm = false
 	goto endFunction
 tableNamerror:
-	print "[Error_SingletableOpenerConfirmation] No table avialable with specified name; " & toOpen
-	SingletableOpenerConfirmation = false
+	print "[Error_openTableAndConfirm] No table avialable with specified name; " & toOpen
+	openTableAndConfirm = false
 	goto endFunction
 alreadyOpenError:
-	print "[Error_SingletableOpenerConfirmation] name specified is already open; " & toOpen 
-	SingletableOpenerConfirmation = true
+	print "[Error_openTableAndConfirm] name specified is already open; " & toOpen 
+	openTableAndConfirm = true
 	goto endFunction
 ErrorOpeningErorr:
-	print "[Error_SingletableOpenerConfirmation] specified path was invalid; " & filePath
-	SingletableOpenerConfirmation = false
+	print "[Error_openTableAndConfirm] specified path was invalid; " & filePath
+	openTableAndConfirm = false
 	goto endFunction
 NoAlternativeError2:
-	print "[Error_SingletableOpenerConfirmation] Alternative doesn't exist for path; " & filePath
-	SingletableOpenerConfirmation = false
+	print "[Error_openTableAndConfirm] Alternative doesn't exist for path; " & filePath
+	openTableAndConfirm = false
 	goto endFunction
 NoAlternativeError:
-	print "[Error_SingletableOpenerConfirmation] Alternative doesn't exist" & alternativeName & "||"  & error$()
-	SingletableOpenerConfirmation = false
+	print "[Error_openTableAndConfirm] Alternative doesn't exist" & alternativeName & "||"  & error$()
+	openTableAndConfirm = false
 	goto endFunction
 End function
 
+sub openSingleTable(byVal tableName as string)
+	dim tempArray(1) as string
+	tempArray(1) = tableName
+	call tableOpener(tempArray)
+end sub
+
 sub tableOpener(tableNames() as string)
-	dim i as integer	
-	,filePath, alternativeName as string
-	
+	dim i as integer,filePath, alternativeName as string
 	for i = 1 to ubound(tableNames)
 		if tableNames(i) <> "" then
 			select alternative,tablePath from PathTABLE where tableNames(i) = TableName into selection2 noSelect
-			Fetch First From selection2
-			filePath = selection2.tablePath
-			
-			if TableInfo(selection2,TAB_INFO_NROWS) <> 0 then 'there is a row entry
+			if TableInfo(selection2,TAB_INFO_NROWS) = 0 then 'there is a row entry
+				goto tableNamerror
+			else
+				Fetch First From selection2
+				filePath = selection2.tablePath
 				if TableIsNotOpen(tableNames(i)) AND not(isPathOpen(filePath)) then 'the table isn't open			
-					if (not(ValidatePath(filePath))) then
+					if (not(ValidateNClosePath(filePath))) then
 						alternativeName = selection2.alternative
 						if(alternativeName <> "") then
 							dim tpA(1) as string
@@ -781,12 +799,6 @@ Dim i as Integer
     End If
     
 End Function
-
-sub openSingleTable(byVal tableName as string)
-	dim tempArray(1) as string
-	tempArray(1) = tableName
-	call tableOpener(tempArray)
-end sub
 
 sub closeIfnotClosed(byVal tableName as string)
 		dim iLoop as integer 
