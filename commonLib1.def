@@ -109,11 +109,11 @@ declare function getFnr(ByVal fastighetsNamn as string) as integer
 declare sub addStringToArrayAsifSet(inputArray() as string,byVal addValue as string)
 declare sub addIntToArrayAsifSet(inputArray() as integer, addValue as integer)
 declare sub tableCloser(tableNames() as string)
-declare function ValidatePath(byVal filePath as string) as logical
+declare function ValidateNClosePath(byVal filePath as string) as logical
 declare sub TimePresent(start as integer,endTime as integer,OptionalNumberOf as integer)
 
 declare function isPathOpen(byVal Tpath as string) as logical
-declare function SingletableOpenerConfirmation(byval toOpen as string) as logical
+declare function openTableAndConfirm(byval toOpen as string) as logical
 declare sub closeTableByPath(byVal Tpath as string)
 declare function FirstLeftMostNumber(byVal inputString as string) as integer
 declare function FindCharTurncStringByPos(byVal toRemove as string,byVal inputString as string) as string

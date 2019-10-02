@@ -23,24 +23,16 @@ end function
 
 Function tableDoesntIncludeColumns(byval tableName as string,TestColumns() as string) as logical
 	'om len(x) >= len(y) och y intersects x entierly, then return false
-	dim testColIndex,TableColIndex as integer
-	, found as logical
-	, tempAlias as alias
-	, tempString as string
-	found = false 'standard value should be false, as not found column in array
-	
+	dim testColIndex,TableColIndex as integer, found as logical, tempAlias as alias, tempString as string found = false 'standard value should be false, as not found column in array
 		
-	for testColIndex = 1 to ubound(TestColumns)
-		
-		for TableColIndex = 1 to tableInfo(tableName, TAB_INFO_NCOLS)
-				
+	for testColIndex = 1 to ubound(TestColumns)	
+		for TableColIndex = 1 to tableInfo(tableName, TAB_INFO_NCOLS)			
 			if(TestColumns(testColIndex) = Columninfo(tableName,"Col" & TableColIndex,COL_INFO_NAME)) then	
 				found = true 'inner loop stops as fast as column is found, moveing to next
 				goto outOfloop
 			else
 				found = false
 			end if	
-			
 		next
 		outOfloop: 'if found, then the outer loop just continue, else endstepTrigger
 		
@@ -326,17 +318,9 @@ end sub
 
 'opens a single table and return boolean if successfully opened
 function openTableAndConfirm(byval toOpen as string) as logical
-	dim 
-	filePath, alternativeName,tpA(1) as string					
-	if isPathOpen(filePath) then
-		goto alreadyOpenError
-	else 'the table isn't open
-
-		select alternative,tablePath from PathTABLE where 
-		toOpen
-		 = TableName into 
-		 pathTableRefference 
-		 noSelect
+	dim filePath, alternativeName,tpA(1) as string					
+	if isPathOpen(filePath) then goto alreadyOpenError else 'the table isn't open
+		select alternative,tablePath from PathTABLE where toOpen = TableName into pathTableRefference noSelect
 	 
 		if TableInfo(pathTableRefference,TAB_INFO_NROWS) = 0 then 'there is no row entry
 			goto tableNamerror 'there is no table reference
@@ -345,15 +329,13 @@ function openTableAndConfirm(byval toOpen as string) as logical
 			if (ValidateNClosePath(filePath)) then 
 				goto PathAlreadyOpenedError 'path is open elsewhere
 			else
-				alternativeName = pathTableRefference.alternative
-
-				if alternativeName = "" then	'eather overwrite alternative path or send noalternativeerror2
+				alternativeName = pathTableRefference.alternative if alternativeName = "" then	'eather overwrite alternative path or send noalternativeerror2
 					goto NoAlternativeError2
 				else
 					if not(openTableAndConfirm(alternativeName)) then  'open alternative reference
 						goto NoAlternativeError3
 					else	'if it did succeede to open the alternative path
-						OnError goto NoAlternativeError
+						OnError goto UnAbleToCreateError
 							Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeTable in the spot of original name
 							close table tpA(1) 'make sure alternativeName table is closed, copie will open later
 						OnError goto 0
@@ -368,14 +350,14 @@ function openTableAndConfirm(byval toOpen as string) as logical
 	 onError goto 0
 	
 	if(TableIsNotOpen(toOpen)) then 
-		goto OpenFailerror
+		goto OpenFailerror 'table is not open
 	else
 		openTableAndConfirm = true
 	end if		
+	
 	endFunction:
 	close table pathTableRefference
-	'table is not open
-
+	
 exit function
 OpenFailerror:
 	print "[Error_openTableAndConfirm] Failed to open table from specified path; " & filePath & " with specified name; " & toOpen
@@ -383,6 +365,10 @@ OpenFailerror:
 	goto endFunction
 tableNamerror:
 	print "[Error_openTableAndConfirm] No table avialable with specified name; " & toOpen
+	openTableAndConfirm = false
+	goto endFunction
+PathAlreadyOpenedError:
+	print "[Error_openTableAndConfirm] Path was opened under another name"
 	openTableAndConfirm = false
 	goto endFunction
 alreadyOpenError:
@@ -397,8 +383,12 @@ NoAlternativeError2:
 	print "[Error_openTableAndConfirm] Alternative doesn't exist for path; " & filePath
 	openTableAndConfirm = false
 	goto endFunction
-NoAlternativeError:
-	print "[Error_openTableAndConfirm] Alternative doesn't exist" & alternativeName & "||"  & error$()
+NoAlternativeError3:
+	print "[Error_openTableAndConfirm] Failed to open alternative path"
+	openTableAndConfirm = false
+	goto endFunction
+UnAbleToCreateError:
+	print "[Error_openTableAndConfirm] Unable To create alternative" & alternativeName & "||"  & error$()
 	openTableAndConfirm = false
 	goto endFunction
 End function
