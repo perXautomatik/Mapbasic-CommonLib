@@ -41,7 +41,7 @@ Declare Function StringContains(ByVal strInput as String, ByVal charToFind as St
 
 Declare function IsTableOpen(table_name as String) as Logical
 declare Function doesnTableExist (table_name As String) As Logical
-declare sub closeIfnotClosed(byVal tableName as string)
+declare sub closeSingleTable(byVal tableName as string)
 
 declare function createTemporaryTableAndOpen(byVal nameAndStructure as string) as string
 

@@ -239,7 +239,7 @@ End Sub
 function ValidateNClosePath(byVal filePath as string) as logical
 		
 	onerror goto error1
-		call closeIfnotClosed("temp")
+		call closeSingleTable("temp")
 		open table filePath as temp
 		
 		if isPathOpen(filePath) then
@@ -356,7 +356,7 @@ function openTableAndConfirm(byval toOpen as string) as logical
 	end if		
 	
 	endFunction:
-	close table pathTableRefference
+	call closeSingleTable("pathTableRefference")
 	
 exit function
 OpenFailerror:
@@ -790,7 +790,7 @@ Dim i as Integer
     
 End Function
 
-sub closeIfnotClosed(byVal tableName as string)
+sub closeSingleTable(byVal tableName as string)
 		dim iLoop as integer 
 		dim sTbl as string 
 		sTbl = tableName' (table to close) 
@@ -808,7 +808,7 @@ sub tableCloser(tableNames() as string)
 	
 	for x=1 to ubound(tableNames())
 		if tableNames(x) <> "" then
-			call closeIfnotClosed(tableNames(x))
+			call closeSingleTable(tableNames(x))
 		end if
 	next
 end sub
