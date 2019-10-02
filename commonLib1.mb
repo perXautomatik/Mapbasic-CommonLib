@@ -321,7 +321,7 @@ function openTableAndConfirm(byval toOpen as string) as logical
 	dim filePath, alternativeName,tpA(1) as string, debug as logical					
 
 	debug = false
-	if IsTableOpen(filePath) then
+	if IsTableOpen(toOpen) then
 		if debug then print "alreadyOpenError" end if
 		goto alreadyOpenError
 	else 'the table isn't open
