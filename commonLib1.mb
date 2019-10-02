@@ -330,7 +330,7 @@ function openTableAndConfirm(byval toOpen as string) as logical
 			if (ValidateNClosePath(filePath)) then
 				goto PathAlreadyOpenedError 'path is open elsewhere
 			end if
-			
+				openStep:
 				onError goto ErrorOpeningErorr
 					Open Table filePath as toOpen
 					openTableAndConfirm = true
@@ -348,12 +348,11 @@ function openTableAndConfirm(byval toOpen as string) as logical
 							Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeTable in the spot of original name
 							close table tpA(1) 'make sure alternativeName table is closed, copie will open later
 						OnError goto 0
+						goto openStep
 					end if
 				end if
 		end if
 	end if
-	
-						
 	
 	if(TableIsNotOpen(toOpen)) then 
 		goto OpenFailerror 'table is not open
@@ -363,7 +362,6 @@ function openTableAndConfirm(byval toOpen as string) as logical
 	
 	endFunction:
 	call closeSingleTable("pathTableRefference")
-	
 exit function
 OpenFailerror:
 	print "[Error_openTableAndConfirm] Failed to open table from specified path; " & filePath & " with specified name; " & toOpen
@@ -377,7 +375,7 @@ PathAlreadyOpenedError:
 	print "[warning_openTableAndConfirm] Path was opened under another name"
 	resume next
 alreadyOpenError:
-	print "[Error_openTableAndConfirm] name specified is already open; " & toOpen 
+	print "[Warning_openTableAndConfirm] name specified is already open; " & toOpen 
 	openTableAndConfirm = true
 	goto endFunction
 ErrorOpeningErorr:
