@@ -319,17 +319,26 @@ end sub
 'opens a single table and return boolean if successfully opened
 function openTableAndConfirm(byval toOpen as string) as logical
 	dim filePath, alternativeName,tpA(1) as string					
+
 	if isPathOpen(filePath) then goto alreadyOpenError else 'the table isn't open
-		select alternative,tablePath from PathTABLE where toOpen = TableName into pathTableRefference noSelect
-	 
+		select alternative,tablePath from PathTABLE where toOpen = TableName into pathTableRefference noSelect 
 		if TableInfo(pathTableRefference,TAB_INFO_NROWS) = 0 then 'there is no row entry
 			goto tableNamerror 'there is no table reference
 		else 
 			fetch first from pathTableRefference filePath = pathTableRefference.tablePath	
-			if (ValidateNClosePath(filePath)) then 
+		
+			if (ValidateNClosePath(filePath)) then
 				goto PathAlreadyOpenedError 'path is open elsewhere
-			else
-				alternativeName = pathTableRefference.alternative if alternativeName = "" then	'eather overwrite alternative path or send noalternativeerror2
+			end if
+			
+				onError goto ErrorOpeningErorr
+					Open Table filePath as toOpen
+					openTableAndConfirm = true
+					exit function
+				onError goto 0
+				
+				alternativeName = pathTableRefference.alternative 
+				if alternativeName = "" then	'eather overwrite alternative path or send noalternativeerror2
 					goto NoAlternativeError2
 				else
 					if not(openTableAndConfirm(alternativeName)) then  'open alternative reference
@@ -341,13 +350,10 @@ function openTableAndConfirm(byval toOpen as string) as logical
 						OnError goto 0
 					end if
 				end if
-			end if
 		end if
 	end if
+	
 						
-	onError goto ErrorOpeningErorr 
-		Open Table filePath as toOpen
-	 onError goto 0
 	
 	if(TableIsNotOpen(toOpen)) then 
 		goto OpenFailerror 'table is not open
@@ -368,17 +374,15 @@ tableNamerror:
 	openTableAndConfirm = false
 	goto endFunction
 PathAlreadyOpenedError:
-	print "[Error_openTableAndConfirm] Path was opened under another name"
-	openTableAndConfirm = false
-	goto endFunction
+	print "[warning_openTableAndConfirm] Path was opened under another name"
+	resume next
 alreadyOpenError:
 	print "[Error_openTableAndConfirm] name specified is already open; " & toOpen 
 	openTableAndConfirm = true
 	goto endFunction
 ErrorOpeningErorr:
-	print "[Error_openTableAndConfirm] specified path was invalid; " & filePath
-	openTableAndConfirm = false
-	goto endFunction
+	print "[warning_openTableAndConfirm] specified path was invalid; " & filePath
+	resume next
 NoAlternativeError2:
 	print "[Error_openTableAndConfirm] Alternative doesn't exist for path; " & filePath
 	openTableAndConfirm = false
