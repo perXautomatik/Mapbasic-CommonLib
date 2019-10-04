@@ -91,7 +91,7 @@ declare sub commitAndAdindexColumn(tempAlias as alias)
 declare sub combineTwoSelections(motherTable as alias,byVal tableName1 as string, byVal tableName2 as string, byVal outPutTable as string)
 declare sub getRowAtIndexAsArray(tableOfChoiseKir as alias,byval indexNr as integer,tableColumns() as string)
 
-declare function mixedDateToUnion(datumString as string) as string
+declare function mixedDateToUnion(byVal datumString as string) as string
 
 declare sub updateIndex(byVal tableName as string)
 declare sub mergeTables(värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string,condition as string,byval ressultName as string,composite as logical,byVal compositeString as string)
