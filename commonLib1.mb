@@ -353,8 +353,9 @@ function openTableAndConfirm(byval toOpen as string) as logical
 				openStep:
 				if debug then print "openStep" end if
 				
+				OnError goto NoAlternativeError3
 				Open Table filePath as toOpen
-				
+				onError goto 0
 			
 				if(TableIsNotOpen(toOpen)) then 
 					if debug then print "the table is not open, resorting to alternative" end if
