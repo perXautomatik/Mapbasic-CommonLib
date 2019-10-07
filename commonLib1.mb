@@ -353,8 +353,9 @@ function openTableAndConfirm(byval toOpen as string) as logical
 				openStep:
 				if debug then print "openStep" end if
 				
-				Open Table filePath as toOpen
-				
+				onError goto ErrorOpeningErorr
+					Open Table filePath as toOpen
+				onError goto 0
 			
 				if(TableIsNotOpen(toOpen)) then 
 					if debug then print "the table is not open, resorting to alternative" end if
@@ -427,7 +428,9 @@ sub openSingleTable(byVal tableName as string)
 end sub
 
 sub tableOpener(tableNames() as string)
-	dim i as integer,filePath, alternativeName as string for i = 1 to ubound(tableNames)
+	dim i as integer
+	
+	for i = 1 to ubound(tableNames)
 		if tableNames(i) <> "" then
 			if not(openTableAndConfirm(tableNames(i))) then
 				goto OpenFailerror
