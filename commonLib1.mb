@@ -353,9 +353,8 @@ function openTableAndConfirm(byval toOpen as string) as logical
 				openStep:
 				if debug then print "openStep" end if
 				
-				OnError goto NoAlternativeError3
 				Open Table filePath as toOpen
-				onError goto 0
+				
 			
 				if(TableIsNotOpen(toOpen)) then 
 					if debug then print "the table is not open, resorting to alternative" end if
@@ -428,85 +427,24 @@ sub openSingleTable(byVal tableName as string)
 end sub
 
 sub tableOpener(tableNames() as string)
-	dim i as integer,filePath, alternativeName as string
-	for i = 1 to ubound(tableNames)
+	dim i as integer,filePath, alternativeName as string for i = 1 to ubound(tableNames)
 		if tableNames(i) <> "" then
-			select alternative,tablePath from PathTABLE where tableNames(i) = TableName into selection2 noSelect
-			if TableInfo(selection2,TAB_INFO_NROWS) = 0 then 'there is a row entry
-				goto tableNamerror
-			else
-				Fetch First From selection2
-				filePath = selection2.tablePath
-				if TableIsNotOpen(tableNames(i)) AND not(isPathOpen(filePath)) then 'the table isn't open			
-					if (not(ValidateNClosePath(filePath))) then
-						alternativeName = selection2.alternative
-						if(alternativeName <> "") then
-							dim tpA(1) as string
-							tpA(1)= alternativeName 'call for alternative
-							call tableopener(tpA)
-							
-							OnError goto NoAlternativeError
-								Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeName in the spot of original name
-								close table tpA(1) 'make sure alternativeName table is closed, (original) copie will open later
-							OnError goto 0
-						else
-							goto NoAlternativeError2
-						end if
-					end if
-						
-					onError goto ErrorOpeningErorr
-						Open Table filePath as tableNames(i)
-					onError goto 0
-											
-					if(TableIsNotOpen(tableNames(i))) then
-						goto OpenFailerror
-					end if								
-				else
-					if TableIsNotOpen(tableNames(i)) then
-						call closeTableByPath(filePath)
-						call openSingleTable(tableNames(i))
-					end if
-						goto alreadyOpenError
-					else
-				end if
-			else
-				goto tableNamerror
-			end if	
+			if not(openTableAndConfirm(tableNames(i))) then
+				goto OpenFailerror
+			end if
 		else
 			goto EmptyEntryError
 		end if
-		'close table selection2
 		nextTable: 'fínish the loop
 	Next
 	
 exit sub
 EmptyEntryError:
-	print "[Error_tableOpener] EmptyEntry submitted @" & i 
+	print "[Warning_tableOpener] EmptyEntry submitted @" & i 
 	goto nextTable
 OpenFailerror:
-	print "[Error_tableOpener] Failed to open table from specified path with specified name"
-	print tableNames(i)
-	print filePath
+	print "[Warning_tableOpener] Failed to open @" & i 
 	goto nextTable
-tableNamerror:
-	print "[Error_tableOpener] No table avialable with specified name"
-	print tableNames(i)
-	goto nextTable
-alreadyOpenError:
-	print "[Warning_tableOpener] name specified is already open"
-	print tableNames(i)
-	goto nextTable
-ErrorOpeningErorr:
-	print "[Error_tableOpener] specified path was invalid"
-	print filePath
-	goto nextTable
-NoAlternativeError2:
-	note "Alternative doesn't exist for path " & filePath
-	print "[Error_tableOpener]@ " & filePath
-	goto nextTable
-NoAlternativeError:
-	note "[Error_tableOpener]" & error$() & "||" & alternativeName & " Alternative doesn't exist"
-	resume nextTable
 End Sub
 
 sub cleanUpFormerSession
