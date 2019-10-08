@@ -895,9 +895,18 @@ Sub getColumnsOfTable_intoArray(ByVal tableName as string,columnNames() as strin
 	tempAlias = tableName
 		
 	For x=1 to TableInfo(tempAlias, TAB_INFO_NCOLS)
-		redim columnNames(x)
-	    columnNames(x) = ColumnInfo(tempAlias, "col"+str$(x), 1) 
+		onError goto errorX
+			redim columnNames(x)
+	    	columnNames(x) = ColumnInfo(tempAlias, "col"+str$(x), 1) 
+	 	onError goto 0
 	Next
+	
+exit sub
+	errorX:
+	print ubound(columnNames())
+	print tempAlias
+	print x
+	print ColumnInfo(tempAlias, "col"+str$(x), 1)
 		
 end sub
 
