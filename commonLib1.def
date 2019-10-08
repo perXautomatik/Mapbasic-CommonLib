@@ -48,20 +48,10 @@ declare function createTemporaryTableAndOpen(byVal nameAndStructure as string) a
 declare sub rowIdsFromSelection(rowIds() as integer,byVal tableName as string)
 declare sub rowIndexFromSelection(rowindex() as integer,byVal tableName as string)
 
-'	print j
-'	
-'	print "inArray"
-'	for j = 1 to ubound(inArray1)
-'		print inArray1(j)
-'	next
-'	print "inArray2"
-'	for j = 1 to ubound(inArray2)
-'		print inArray2(j)
-'	next
-'	print "outArray"
-'	for j = 1 to ubound(outArray)
-'		print outArray(j)
-'	next
+declare sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal insertWhere as string)
+declare sub commonSubsetOfTwoStrArrays(array1() as string,array2() as string,ressultArray() as string)
+	
+
 declare sub JoinTwoArraysOfIntsIntoThrid(inArray1() as integer,inArray2() as integer,outArray() as integer)
 
 declare sub selectFromTableByArrayOfRowids(byVal tableName as string,rowids() as integer,byVal selectionName as string)
