@@ -171,11 +171,14 @@ CloseError:
 End Sub
 
 sub removeIndexfromtables(tableNames() as string)
-dim i as integer
+dim i as integer,tempAlias as alias
 	'error om table inte är öppet
 	for i=1 to ubound(tableNames)
 		commit table tableNames(i)
-		Alter Table tableNames(i) ( drop rowidX ) Interactive
+		
+		tempAlias = tableNames(i)
+		call removeIndex(tempAlias)
+		
 		commit table tableNames(i)
 	next
 		
@@ -185,6 +188,7 @@ sub removeIndex(tableName as alias)
 
 dim query as string
 	
+	commit table tableName
 	query = "Alter Table "& tableName & "( drop rowIndex) Interactive"
 	
 	onError goto queryError
@@ -195,7 +199,7 @@ dim query as string
 
 exit sub
 queryError:
-	print error$()
+	print "[Error_removeIndex] " & tableName & " " & error$()
 	resume next
 
 end sub
@@ -1653,6 +1657,37 @@ function XOR(byVal a as logical, byVal b as logical) as logical
 
 end function
 
+
+'	print j
+'	
+'	print "inArray"
+'	for j = 1 to ubound(inArray1)
+'		print inArray1(j)
+'	next
+'	print "inArray2"
+'	for j = 1 to ubound(inArray2)
+'		print inArray2(j)
+'	next
+'	print "outArray"
+'	for j = 1 to ubound(outArray)
+'		print outArray(j)
+'	next
+
+
+sub commonSubsetOfTwoStrArrays(array1() as string,array2() as string,ressultArray() as string)
+		dim i,j,k as integer
+		
+		For i = 1 to ubound(array1)
+			For j = 1 to ubound(array2)
+				If (array1(i) = array2(j)) Then
+					k=k+1
+					redim ressultArray(k)
+					ressultArray(k) = array1(i)
+				End If
+			next
+		Next
+end sub
+
 function IFSAMEoneDIFFRENTzeroONEBLANKhalf(byVal valX as string,byVal valY as string) as float
 
 	if (valx=valy) then
@@ -1665,10 +1700,50 @@ function IFSAMEoneDIFFRENTzeroONEBLANKhalf(byVal valX as string,byVal valY as st
 	
 end function
 
+sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal insertWhere as string)
+	dim query,excludedColumn,collArray1,collArray2 as string	,nrCol as integer
+	
+	'trye
+	dim ressultArray(1) as string
+	call getColumnsOfTable_intoArray(tableToInsert,collArray1)
+	call getColumnsOfTable_intoArray(insertWhere,collArray2)
+	call commonSubsetOfTwoStrArrays(collArray1,collArray2,ressultArray)
+	
+	query = 
+	"Insert Into " & 
+	insertWhere &
+	 " (" & arrayAsStringIgnoreEmpty(ressultArray) &
+	") Select "
+	& arrayAsStringIgnoreEmpty(ressultArray)
+	& " From " 
+	& tableToInsert 
+	& " DropIndex Auto"
+	
+	onError goto ContinueError
+		run command query
+	onError goto 0
+	close table tableToInsert
+exit sub
+	ContinueError:
+	note "insertXintoYtableError" & error$()
+	print query
+	
+	resume next
+
+end sub
+
+'inserts col1,col2,coln... from table y into col1,col2,coln... of table x, 
+'is supposed to only do that, but i thought of implementing a columnName matching just to save myself some headache in the futhure
 sub insertXintoYtableWhereXcolLessThaYcol(ByVal tableToInsert as string,byVal insertWhere as string)
-	dim query as string	,nrCol as integer
+	dim query,excludedColumn,collArray1,collArray2 as string	,nrCol as integer
 	
 	nrCol = iif(TableInfo(tableToInsert, TAB_INFO_NCOLS)<=TableInfo(insertWhere, TAB_INFO_NCOLS),TableInfo(tableToInsert, TAB_INFO_NCOLS),TableInfo(insertWhere, TAB_INFO_NCOLS))
+	if(TableInfo(tableToInsert, TAB_INFO_NCOLS) > TableInfo(insertWhere, TAB_INFO_NCOLS)) then
+		excludedColumn = "COL"& TableInfo(tableToInsert, TAB_INFO_NCOLS)
+		print "[Warning_insertXintoYtableWhereXcolLessThaYcol] " & ColumnInfo(tableToInsert, excludedColumn,1) & " will be excluded"
+
+	end if
+	
 	
 	query = 
 	"Insert Into " & 
