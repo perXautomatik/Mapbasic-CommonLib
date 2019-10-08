@@ -98,18 +98,21 @@ sub GetOpentables(TableArray() as String)
 End sub
 
 sub closeAllBut(tableNames() as string)
-	dim CopyOfTableNotToClose(),openTables(),theOpenTable as string
-	dim i,j,k,NrOfTablesNotToClose as integer	
+	dim CopyOfTableNotToClose(),openTables(),theOpenTable as string,i,j,k,NrOfTablesNotToClose as integer	
 
 	call GetOpentables(openTables())
 	
-	NrOfTablesNotToClose = ubound(tableNames)+1
-	ReDim CopyOfTableNotToClose(NrOfTablesNotToClose)	
-	CopyOfTableNotToClose(NrOfTablesNotToClose) = "PathTABLE"
+	'a empty table of tables to keep open, plus a last entry with pathTable
+
+	ReDim CopyOfTableNotToClose(ubound(tableNames)+1)	
+			
 	
-	for K = 1 to NrOfTablesNotToClose-1
+	'coppies the table that was initially inserted
+	for K = 1 to ubound(tableNames)
 		CopyOfTableNotToClose(K) = tableNames(K)
 	Next	
+	K=K+1
+	CopyOfTableNotToClose(K) = "PathTABLE"
 	
 	restartLoop:
 	for i = 1 to NumTables()
@@ -117,24 +120,22 @@ sub closeAllBut(tableNames() as string)
 		
 		for j = 1 to NrOfTablesNotToClose
 			if(theOpenTable = CopyOfTableNotToClose(j)) then
-				theOpenTable = ""
-				j = NrOfTablesNotToClose
+				goto found
 			end if
 		next
 		
 		onError goto errorx
 			if not(theOpenTable = "") then
-				close table theOpenTable
+				call closeSingleTable(theOpenTable)
 			end if
 		onError goto 0	
+		found:
 	next
 
-if(false) then
+exit sub
 	errorx:
 		call GetOpentables(openTables())
 	resume restartLoop
-end if
-	
 End Sub
 
 sub tableCloserAndCommiter(tableNames() as string)
@@ -766,10 +767,17 @@ sub closeSingleTable(byVal tableName as string)
 		
 		For iLoop = 1 to numtables() 
 			IF tableinfo(iLoop,1) = sTbl THEN 
-				Close table sTbl 
-				Exit For 
+				onError goto unableToCloseError
+					Close table sTbl
+				onError goto 0
+				Exit For
 			END IF 
 		Next 
+
+exit sub
+unableToCloseError:
+	print "[ERROR_closeSingleTable] " & sTbl 
+	resume next
 End Sub
 
 sub tableCloser(tableNames() as string)
