@@ -111,7 +111,7 @@ sub closeAllBut(tableNames() as string)
 	for K = 1 to ubound(tableNames)
 		CopyOfTableNotToClose(K) = tableNames(K)
 	Next	
-	K=K+1
+	K = ubound(tableNames) + 1
 	CopyOfTableNotToClose(K) = "PathTABLE"
 	
 	restartLoop:
