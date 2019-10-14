@@ -49,9 +49,6 @@ declare sub rowIdsFromSelection(rowIds() as integer,byVal tableName as string)
 declare sub rowIndexFromSelection(rowindex() as integer,byVal tableName as string)
 
 '	print j
-declare function findInINTArray(byVal värde as integer, array() as integer) as logical
-
-declare function findInStringArray(byVal värde as string, array() as string) as logical
 '	
 '	print "inArray"
 '	for j = 1 to ubound(inArray1)
@@ -69,29 +66,21 @@ declare sub JoinTwoArraysOfIntsIntoThrid(inArray1() as integer,inArray2() as int
 
 declare sub selectFromTableByArrayOfRowids(byVal tableName as string,rowids() as integer,byVal selectionName as string)
 declare function columnAtindexAsString(tableName as string,columnName as string, indexNr as integer) as string
-'<<<<<<< HEAD
-declare sub removeFromIntArray(array() as integer,värde as integer)
-'=======
-declare function StringArrayAsString(tableX() as string) as string
-'>>>>>>> master
 
 declare Function arrayAsStringIgnoreEmpty(tableX() as string) as string
 declare Function compareTwoTablesColumns(table1s as string, table2s as string,columnNamesX() as string, columnNamesY() as string) as integer
 declare Function getColumnsOfTable_asString(ByVal tableName as string) as string
 declare Function tidsdialog(i as integer, y as integer,total as integer) as integer
-declare function intArrayAsPrintString(tableX() as integer) as string
 
 declare sub commitCloseAndReopen(tableName as alias,pathX as string)
 declare Sub getColumnsOfTable_intoArray(ByVal tableName as string,columnNames() as string)
 declare sub increment(iProgress as integer,iProgressRange as integer,starttime as integer)
-declare sub insertXintoYtable(ByVal tableToInsert as string,byVal insertWhere as string)
 
 declare sub opentable(TableArray() as String)
 declare sub removeAtIndex(InputArray() as string,byval removeIndex as integer, outputArray() as string)
 declare sub SilenttidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer)
 declare sub tidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer)
 declare sub _tidssummering(iProgress as integer,starttime as integer,ressultArray() as string)
-declare sub insertXintoYtableWhereXcolLessThaYcol(ByVal tableToInsert as string,byVal insertWhere as string)
 
 declare sub removeIndex(tableName as alias)
 declare sub commitAndAdindexColumn(tempAlias as alias)
@@ -103,7 +92,6 @@ declare function mixedDateToUnion(datumString as string) as string
 
 declare sub updateIndex(byVal tableName as string)
 declare sub mergeTables(värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string,condition as string,byval ressultName as string,composite as logical,byVal compositeString as string)
-declare function generateInsertStringWithArray(insertinto as string,värde() as string) as string
 
 declare sub runInvertCommit(byval query as string, byVal commitPath as string)
 declare sub openAndRemoveDupes(tablePath as string,byVal tableName as string, byval groupbyColumnsSeparatedWithComma as string)
@@ -112,7 +100,6 @@ Declare Function ReturnTrue() as Logical
 '@generateMergestring (värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string) as string
 declare sub sqlPopulateTableWithTable(värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string)
 declare Function generateMergestring (värde() as string,påPlatts() as string,byVal insertinto as string,byVal fromTable as string) as string
-declare function getFnr(ByVal fastighetsNamn as string) as integer
 
 declare sub addStringToArrayAsifSet(inputArray() as string,byVal addValue as string)
 declare sub addIntToArrayAsifSet(inputArray() as integer, addValue as integer)
@@ -123,18 +110,3 @@ declare sub TimePresent(start as integer,endTime as integer,OptionalNumberOf as 
 declare function isPathOpen(byVal Tpath as string) as logical
 declare function SingletableOpenerConfirmation(byval toOpen as string) as logical
 declare sub closeTableByPath(byVal Tpath as string)
-declare function FirstLeftMostNumber(byVal inputString as string) as integer
-declare function FindCharTurncStringByPos(byVal toRemove as string,byVal inputString as string) as string
-declare function SqlGenWhereColIsNotAny(byVal kolName, toFilterBy() as string) as string
-declare function ifOpenFetchFirstCol11Asinteger(byVal tableName as string) as integer
-declare sub columnAsStringArray(byVal tableName as string,byVal columnName as string, Array() as string)
-declare function DiarieUtanBokstäver(ByVal diarienummer as string) as string
-declare function IFSAMEoneDIFFRENTzeroONEBLANKhalf(byVal valX as string,byVal valY as string) as float
-declare function XOR(byVal a as logical, byVal b as logical) as logical
-
-declare function getPathFromPathTable(byVal tableName as string) as string
-'declare function findInINTArray(byVal värde as integer, array() as integer) as logical
-'declare function findInStringArray(byVal värde as string, array() as string) as logical
-'declare function intArrayAsPrintString(tableX() as integer) as string
-'declare sub removeFromIntArray(array() as integer,värde as integer)
-declare function sqlPart_ColNrs(byVal nr as integer) as string
