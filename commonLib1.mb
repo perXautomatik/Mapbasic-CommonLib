@@ -1,6 +1,8 @@
 Include "MapBasic.def"
 include "commonLib1.def"
 
+'Todo: implement general alternative paths, instead of indevidual.
+
 sub görTillBasTabell(byval tableName as string)
 	dim tempPath as string
 	tempPath = TempFileName$("")
