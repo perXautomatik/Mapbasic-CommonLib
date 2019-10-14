@@ -99,6 +99,7 @@ sub GetOpentables(TableArray() as String)
 	Next
 End sub
 
+'if pathTable exsists, keeps that open to
 sub closeAllBut(tableNames() as string)
 	dim CopyOfTableNotToClose(),openTables(),theOpenTable as string,i,j,k,NrOfTablesNotToClose as integer	
 
@@ -336,6 +337,8 @@ sub closeTableByPath(byVal Tpath as string)
 end sub
 
 'opens a single table and return boolean if successfully opened
+'require "pathTable" to be opened
+
 function openTableAndConfirm(byval toOpen as string) as logical
 	dim filePath, alternativeName,tpA(1) as string, debug as logical					
 
@@ -1658,6 +1661,7 @@ sub columnAsStringArray(byVal tableName as string,byVal columnName as string, Ar
 	close table deleteme
 end sub
 
+'requires "pathTable"
 function getPathFromPathTable(byVal tableNamex as string) as string
 	
 	select tablePath from pathTable where TableName = TableNamex into tempSelect
