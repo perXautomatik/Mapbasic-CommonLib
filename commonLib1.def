@@ -70,7 +70,7 @@ declare sub insertXintoYtable(ByVal tableToInsert as string,byVal insertWhere as
 
 declare sub opentable(TableArray() as String)
 declare sub removeAtIndex(InputArray() as string,byval removeIndex as integer, outputArray() as string)
-declare sub SilenttidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer)
+declare sub SilenttidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer,byVal processName as string)
 declare sub tidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer)
 declare sub _tidssummering(iProgress as integer,starttime as integer,ressultArray() as string)
 declare sub insertXintoYtableWhereXcolLessThaYcol(ByVal tableToInsert as string,byVal insertWhere as string)
@@ -121,3 +121,5 @@ declare function intArrayAsPrintString(tableX() as integer) as string
 declare sub removeFromIntArray(array() as integer,värde as integer)
 declare function sqlPart_ColNrs(byVal nr as integer) as string
 declare function tableNameByPath(byVal Tpath as string) as string
+
+declare function qm as string
