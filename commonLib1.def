@@ -123,3 +123,5 @@ declare function sqlPart_ColNrs(byVal nr as integer) as string
 declare function tableNameByPath(byVal Tpath as string) as string
 
 declare function qm as string
+declare function tidsdialogX(inputString as string) as integer
+declare function intArrayAsString(tableX() as integer) as string
