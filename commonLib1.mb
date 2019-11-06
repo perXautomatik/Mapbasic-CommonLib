@@ -1631,14 +1631,21 @@ function generateInsertStringWithArray(insertinto as string,värde() as string) a
 	next
 		
 	SecondHalf = SecondHalf & ")"
+	
+	firstHalf = firstHalf & SecondHalf
 
-	generateInsertStringWithArray = firstHalf & SecondHalf
+	if(insertinto & " Into ressultat () Values ()" = firstHalf) then
+		 goto strangeError
+	end if
+
+	generateInsertStringWithArray = firstHalf
+	
+	
 onerror goto 0	
 
 exit function
 	strangeError:
-	
-		print "strangeError" & ubound(värde) & "|" & uBoundaCol & "|" & error$()
+		print "[strangeError @ generateInsertStringWithArray]" & ubound(värde) & "|" & uBoundaCol & "|" & error$()
 		end program
 end function
 
