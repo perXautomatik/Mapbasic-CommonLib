@@ -1,6 +1,8 @@
 Include "MapBasic.def"
 include "commonLib1.def"
 
+'Todo: implement general alternative paths, instead of indevidual.
+
 sub görTillBasTabell(byval tableName as string)
 	dim tempPath as string
 	tempPath = TempFileName$("")
@@ -97,6 +99,7 @@ sub GetOpentables(TableArray() as String)
 	Next
 End sub
 
+'if pathTable exsists, keeps that open to
 sub closeAllBut(tableNames() as string)
 	dim CopyOfTableNotToClose(),openTables(),theOpenTable as string,i,j,k,NrOfTablesNotToClose as integer	
 
@@ -105,7 +108,11 @@ sub closeAllBut(tableNames() as string)
 	'a empty table of tables to keep open, plus a last entry with pathTable
 
 	ReDim CopyOfTableNotToClose(ubound(tableNames)+1)	
+<<<<<<< HEAD
 	
+=======
+			
+>>>>>>> origin/OrganiseringFÃ¶rMailbox
 	
 	'coppies the table that was initially inserted
 	for K = 1 to ubound(tableNames)
@@ -125,7 +132,11 @@ sub closeAllBut(tableNames() as string)
 		next
 		
 		onError goto errorx
+<<<<<<< HEAD
 			if not(theOpenTable = "" AND theOpenTable =  "PathTABLE" ) then
+=======
+			if not(theOpenTable = "") then
+>>>>>>> origin/OrganiseringFÃ¶rMailbox
 				call closeSingleTable(theOpenTable)
 			end if
 		onError goto 0	
@@ -334,6 +345,11 @@ sub closeTableByPath(byVal Tpath as string)
 end sub
 
 'opens a single table and return boolean if successfully opened
+<<<<<<< HEAD
+=======
+'require "pathTable" to be opened
+
+>>>>>>> origin/OrganiseringFÃ¶rMailbox
 function openTableAndConfirm(byval toOpen as string) as logical
 	dim filePath, alternativeName,tpA(1) as string, debug as logical					
 
@@ -973,6 +989,13 @@ Sub getColumnsOfTable_intoArray(ByVal tableName as string,columnNames() as strin
 		
 	For x=1 to TableInfo(tempAlias, TAB_INFO_NCOLS)
 		onError goto errorX
+<<<<<<< HEAD
+=======
+			print ubound(columnNames())
+			print tempAlias
+			print x
+			print ColumnInfo(tempAlias, "col"+str$(x), 1)
+>>>>>>> origin/OrganiseringFÃ¶rMailbox
 			redim columnNames(x)
 	    	columnNames(x) = ColumnInfo(tempAlias, "col"+str$(x), 1) 
 	 	onError goto 0
@@ -1567,6 +1590,38 @@ exit sub
 	print "arrayError:can't remove:" & värde & "|inputArraysize:" & ubound(array) & "|" & error$()
 end sub
 
+
+sub removeFromStringArray(array() as String,värde as String)
+onerror goto arrayError
+
+	dim x,y,z as integer
+	,temparray() as String
+	z = 0
+	if(ubound(array) <> 0) then 'inte problemmatiskt
+		for x=1 to ubound(array) '1-2
+			if (array(x) <> värde) then 
+				z=z+1
+				redim tempArray(z)
+				temparray(z) = array(x)
+			end if
+		next
+		
+		redim array(ubound(temparray))
+		
+		for y=1 to ubound(temparray)
+			array(y) = temparray(y)
+		next
+	else
+		goto ArrayError
+	end if
+	
+onerror goto 0
+
+exit sub
+	arrayerror:
+	print "[ERROR_removeFromStringArray]:can't remove:" & värde & "|inputArraysize:" & ubound(array) & "|" & error$()
+end sub
+
 function FirstLeftMostNumber(byVal inputString as string) as integer
 	dim returnNr, x as integer
 	,tempString as string
@@ -1718,6 +1773,7 @@ sub columnAsStringArray(byVal tableName as string,byVal columnName as string, Ar
 	close table deleteme
 end sub
 
+'requires "pathTable"
 function getPathFromPathTable(byVal tableNamex as string) as string
 	
 	select tablePath from pathTable where TableName = TableNamex into tempSelect
@@ -1732,6 +1788,26 @@ function XOR(byVal a as logical, byVal b as logical) as logical
 
 end function
 
+<<<<<<< HEAD
+=======
+
+'	print j
+'	
+'	print "inArray"
+'	for j = 1 to ubound(inArray1)
+'		print inArray1(j)
+'	next
+'	print "inArray2"
+'	for j = 1 to ubound(inArray2)
+'		print inArray2(j)
+'	next
+'	print "outArray"
+'	for j = 1 to ubound(outArray)
+'		print outArray(j)
+'	next
+
+
+>>>>>>> origin/OrganiseringFÃ¶rMailbox
 sub commonSubsetOfTwoStrArrays(array1() as string,array2() as string,ressultArray() as string)
 		dim i,j,k as integer
 		
@@ -1759,7 +1835,11 @@ function IFSAMEoneDIFFRENTzeroONEBLANKhalf(byVal valX as string,byVal valY as st
 end function
 
 sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal insertWhere as string)
+<<<<<<< HEAD
 	dim query,excludedColumn,collArray1(),collArray2() as string	,nrCol as integer
+=======
+	dim query,excludedColumn,collArray1,collArray2 as string	,nrCol as integer
+>>>>>>> origin/OrganiseringFÃ¶rMailbox
 	
 	'trye
 	dim ressultArray(1) as string
@@ -1780,10 +1860,17 @@ sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal inser
 	onError goto ContinueError
 		run command query
 	onError goto 0
+<<<<<<< HEAD
 	
 exit sub
 	ContinueError:
 	print "insertCommonColumnsFromTableXintoY ERROR " & error$()
+=======
+	close table tableToInsert
+exit sub
+	ContinueError:
+	note "insertXintoYtableError" & error$()
+>>>>>>> origin/OrganiseringFÃ¶rMailbox
 	print query
 	
 	resume next
