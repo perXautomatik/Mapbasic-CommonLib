@@ -1152,6 +1152,58 @@ function arrayAsStringIgnoreEmpty(tableX() as string) as string
 	arrayAsStringIgnoreEmpty = returnString
 End Function
 
+function StringArrayAsString(tableX() as string) as string
+	dim x as integer
+	dim returnString as string
+	
+	For x=1 to UBOUND(tableX)
+	 	returnString = returnString + iif(tableX(x) <> "",tableX(x),"'" & tableX(x) & "'")
+	    
+    	if(x < UBOUND(tableX)) then
+    		returnString = returnString & ","
+    	end if
+	Next
+	
+	StringArrayAsString = returnString
+End Function
+
+function intArrayAsString(tableX() as integer) as string
+	dim x as integer
+	dim returnString as string
+	returnString = ""
+	
+	For x=1 to UBOUND(tableX)
+	 	onError goto inputError
+	 		dim q as logical 
+	 		q = "" & tableX(x) <> ""
+		 	returnString = returnString + iif(q,"" & tableX(x) & "","'" & tableX(x) & "'")
+	    onError goto 0
+	    
+    	if(x < UBOUND(tableX)) then
+    		returnString = returnString & ","
+    	end if
+	Next
+	
+
+	intArrayAsString = returnString
+	
+	
+	
+exit function 
+inputError:
+	For x=1 to UBOUND(tableX)
+		print "error|" & tableX(x)
+	Next
+	print "ubound|" & UBOUND(tableX)
+	print "x|" & x
+	print "returnString|" & returnString
+	print "atpos x|" & tableX(x)
+	print "[ERROR_intArrayAsString|" & error$()
+	end program
+
+End Function
+
+
 sub combineTwoSelections(motherTable as alias,byVal tableName1 as string, byVal tableName2 as string, byVal outPutTable as string)
 	' have to have index on mother table
 ' will close table1 and table2
@@ -1579,31 +1631,23 @@ function generateInsertStringWithArray(insertinto as string,värde() as string) a
 	next
 		
 	SecondHalf = SecondHalf & ")"
+	
+	firstHalf = firstHalf & SecondHalf
 
-	generateInsertStringWithArray = firstHalf & SecondHalf
+	if(insertinto & " Into ressultat () Values ()" = firstHalf) then
+		 goto strangeError
+	end if
+
+	generateInsertStringWithArray = firstHalf
+	
+	
 onerror goto 0	
 
 exit function
 	strangeError:
-	
-		print "strangeError" & ubound(värde) & "|" & uBoundaCol & "|" & error$()
+		print "[strangeError @ generateInsertStringWithArray]" & ubound(värde) & "|" & uBoundaCol & "|" & error$()
 		end program
 end function
-
-function StringArrayAsString(tableX() as string) as string
-	dim x as integer
-	dim returnString as string
-	
-	For x=1 to UBOUND(tableX)
-	 	returnString = returnString + iif(tableX(x) <> "",tableX(x),"'" & tableX(x) & "'")
-	    
-    	if(x < UBOUND(tableX)) then
-    		returnString = returnString & ","
-    	end if
-	Next
-	
-	StringArrayAsString = returnString
-End Function
 
 function FindCharTurncStringByPos(byVal toRemove as string,byVal inputString as string) as string
 	FindCharTurncStringByPos = left$(inputString,
@@ -1688,23 +1732,6 @@ function XOR(byVal a as logical, byVal b as logical) as logical
 
 end function
 
-
-'	print j
-'	
-'	print "inArray"
-'	for j = 1 to ubound(inArray1)
-'		print inArray1(j)
-'	next
-'	print "inArray2"
-'	for j = 1 to ubound(inArray2)
-'		print inArray2(j)
-'	next
-'	print "outArray"
-'	for j = 1 to ubound(outArray)
-'		print outArray(j)
-'	next
-
-
 sub commonSubsetOfTwoStrArrays(array1() as string,array2() as string,ressultArray() as string)
 		dim i,j,k as integer
 		
@@ -1753,10 +1780,10 @@ sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal inser
 	onError goto ContinueError
 		run command query
 	onError goto 0
-	close table tableToInsert
+	
 exit sub
 	ContinueError:
-	note "insertXintoYtableError" & error$()
+	print "insertCommonColumnsFromTableXintoY ERROR " & error$()
 	print query
 	
 	resume next
@@ -1792,7 +1819,7 @@ sub insertXintoYtableWhereXcolLessThaYcol(ByVal tableToInsert as string,byVal in
 	close table tableToInsert
 exit sub
 	ContinueError:
-	note "insertXintoYtableError" & error$()
+	print "insertXintoYtableWhereXcolLessThaYcol ERROR" & error$()
 	print query
 	
 	resume next
@@ -1841,4 +1868,24 @@ end function
 
 function qm() as string
 	qm = chr$(34)
+end function
+
+function tidsdialogX(inputString as string) as integer
+	dim textTemp as string
+	dim tidsbegränsning,number as integer
+		
+	textTemp = inputstring
+	Dialog
+		control statictext title textTemp
+			
+		Control OKButton
+		Control Cancelbutton
+		 
+		If not(CommandInfo(CMD_INFO_DLG_OK)) Then
+			tidsdialogx = 0
+			Exit Sub
+		else
+			tidsdialogx = 1
+		end if
+
 end function
