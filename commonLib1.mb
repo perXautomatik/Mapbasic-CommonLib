@@ -1780,10 +1780,10 @@ sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal inser
 	onError goto ContinueError
 		run command query
 	onError goto 0
-	close table tableToInsert
+	
 exit sub
 	ContinueError:
-	note "insertXintoYtableError" & error$()
+	print "insertCommonColumnsFromTableXintoY ERROR " & error$()
 	print query
 	
 	resume next
@@ -1819,7 +1819,7 @@ sub insertXintoYtableWhereXcolLessThaYcol(ByVal tableToInsert as string,byVal in
 	close table tableToInsert
 exit sub
 	ContinueError:
-	note "insertXintoYtableError" & error$()
+	print "insertXintoYtableWhereXcolLessThaYcol ERROR" & error$()
 	print query
 	
 	resume next
