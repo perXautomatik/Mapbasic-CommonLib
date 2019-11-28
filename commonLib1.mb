@@ -1,8 +1,6 @@
 Include "MapBasic.def"
 include "commonLib1.def"
 
-'Todo: implement general alternative paths, instead of indevidual.
-
 sub görTillBasTabell(byval tableName as string)
 	dim tempPath as string
 	tempPath = TempFileName$("")
@@ -99,7 +97,6 @@ sub GetOpentables(TableArray() as String)
 	Next
 End sub
 
-'if pathTable exsists, keeps that open to
 sub closeAllBut(tableNames() as string)
 	dim CopyOfTableNotToClose(),openTables(),theOpenTable as string,i,j,k,NrOfTablesNotToClose as integer	
 
@@ -337,8 +334,6 @@ sub closeTableByPath(byVal Tpath as string)
 end sub
 
 'opens a single table and return boolean if successfully opened
-'require "pathTable" to be opened
-
 function openTableAndConfirm(byval toOpen as string) as logical
 	dim filePath, alternativeName,tpA(1) as string, debug as logical					
 
@@ -901,7 +896,7 @@ Sub getColumnsOfTable_intoArray(ByVal tableName as string,columnNames() as strin
 		
 	For x=1 to TableInfo(tempAlias, TAB_INFO_NCOLS)
 		onError goto errorX
-			print ubound(columnNames)
+			print ubound(columnNames())
 			print tempAlias
 			print x
 			print ColumnInfo(tempAlias, "col"+str$(x), 1)
@@ -1502,38 +1497,6 @@ exit sub
 	print "arrayError:can't remove:" & värde & "|inputArraysize:" & ubound(array) & "|" & error$()
 end sub
 
-
-sub removeFromStringArray(array() as String,värde as String)
-onerror goto arrayError
-
-	dim x,y,z as integer
-	,temparray() as String
-	z = 0
-	if(ubound(array) <> 0) then 'inte problemmatiskt
-		for x=1 to ubound(array) '1-2
-			if (array(x) <> värde) then 
-				z=z+1
-				redim tempArray(z)
-				temparray(z) = array(x)
-			end if
-		next
-		
-		redim array(ubound(temparray))
-		
-		for y=1 to ubound(temparray)
-			array(y) = temparray(y)
-		next
-	else
-		goto ArrayError
-	end if
-	
-onerror goto 0
-
-exit sub
-	arrayerror:
-	print "[ERROR_removeFromStringArray]:can't remove:" & värde & "|inputArraysize:" & ubound(array) & "|" & error$()
-end sub
-
 function FirstLeftMostNumber(byVal inputString as string) as integer
 	dim returnNr, x as integer
 	,tempString as string
@@ -1693,7 +1656,6 @@ sub columnAsStringArray(byVal tableName as string,byVal columnName as string, Ar
 	close table deleteme
 end sub
 
-'requires "pathTable"
 function getPathFromPathTable(byVal tableNamex as string) as string
 	
 	select tablePath from pathTable where TableName = TableNamex into tempSelect
