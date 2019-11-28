@@ -105,7 +105,11 @@ sub closeAllBut(tableNames() as string)
 	'a empty table of tables to keep open, plus a last entry with pathTable
 
 	ReDim CopyOfTableNotToClose(ubound(tableNames)+1)	
+<<<<<<< HEAD
+	
+=======
 			
+>>>>>>> origin/OrganiseringF√∂rMailbox
 	
 	'coppies the table that was initially inserted
 	for K = 1 to ubound(tableNames)
@@ -125,7 +129,11 @@ sub closeAllBut(tableNames() as string)
 		next
 		
 		onError goto errorx
+<<<<<<< HEAD
+			if not(theOpenTable = "" AND theOpenTable =  "PathTABLE" ) then
+=======
 			if not(theOpenTable = "") then
+>>>>>>> origin/OrganiseringF√∂rMailbox
 				call closeSingleTable(theOpenTable)
 			end if
 		onError goto 0	
@@ -334,6 +342,14 @@ sub closeTableByPath(byVal Tpath as string)
 end sub
 
 'opens a single table and return boolean if successfully opened
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+'require "pathTable" to be opened
+
+>>>>>>> origin/OrganiseringF√∂rMailbox
+>>>>>>> 37fb5db69acc5a93c110a5f7b15a3ccc6a471240
 function openTableAndConfirm(byval toOpen as string) as logical
 	dim filePath, alternativeName,tpA(1) as string, debug as logical					
 
@@ -831,31 +847,108 @@ end sub
 
 sub _tidssummering(iProgress as integer,starttime as integer,ressultArray() as string)
 
-	dim endtime,totalTid as integer
-	dim tidsˆversikt,canceledString as string
-	endTime = Timer()		
-	totalTid = endTime-startTime
+onError goto Delningsfel
+	dim endtime,totalTid as integer,tidsˆversikt,canceledString as string
+	endTime = Timer()	totalTid = endTime-startTime
+
 	tids÷versikt = totalTid & " | " & ((totalTid)/iProgress) & " sec/step"
 	canceledString = iProgress & "total: " & tids÷versikt
 	
 	ressultArray(1) = canceledString
 	ressultArray(2) = tids÷versikt
+OnError goto 0
 
+exit sub
+Delningsfel:
+print error$()
+print	"endtime|" & endtime
+print	"starttime|" & 	starttime
+print	"totalTid|" & totalTid
+print	"iProgress|" & iProgress
+	
+print	"totalTid|" & totalTid
+
+print	"tids÷versikt|" & tids÷versikt
+print	"canceledString|" & canceledString
+
+		end program
 end sub
 
-sub SilenttidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer)
+sub SilenttidsSummering(iProgress as integer,iProgressRange as integer,starttime as integer,byVal processName as string)
 
 	dim ressultArray(2) as string
 	
 	call _tidssummering(IProgress,startTime,ressultArray)
 
 	If iProgress <= iProgressRange then
-		print "ended early, got to step: " & ressultArray(1)
+		print "ended early, got to step: " & iProgressRange
 	Else
-		print "Complete! total time: " & ressultArray(2)
+		print "Complete! "
 	End If  
 	
+	print "***************************************************************************************************************************"
+	print ressultArray(2) & " tidsenheter| " & ressultArray(1) & " Totala kˆrningens| "  & iprogressRange & " " & processName 
+	print "***************************************************************************************************************************"
+	
 end sub
+
+sub TimePresent(start as integer,endTime as integer,OptionalNumberOf as integer)
+
+		dim	totaltidH,totaltidM,totaltids,upskattad,upskattadH,upskattadM,upskattads as integer
+		,tidperEnhet,totaltid as float
+		
+		totaltid = endTime - start
+		
+		if OptionalNumberOf <> 0 then
+			tidperEnhet = totaltid/OptionalNumberOf
+		end if
+		
+		if(totaltid > 3600) then
+			totaltidH = totaltid/3600
+			totaltidM = (totaltid mod 3600) / 60
+			totaltids = (totaltid mod 3600) mod 60
+		else
+			totaltidH = 0
+			if(totaltid > 60) then
+				totaltidM = totaltid / 60
+				totaltids = totaltid mod 60
+			else
+				totaltidM = 0
+				totaltids = totaltid
+			end if
+		end if
+		
+		print "upskattat totalt:" & totaltidH & "h" & totaltidM & "m" & totaltids & "s passerade"
+		if OptionalNumberOf <> 0 then
+			print "tidsenheter:" & tidperEnhet
+		end if
+		
+end sub
+
+function tidsdialog(i as integer, y as integer,total as integer) as integer
+	dim textTemp as string
+	dim tidsbegr‰nsning,number as integer
+	
+	number = Y/(i+0.001)
+	Set Format Number "local"
+		
+	textTemp = "poster: " & i & " (" & number & "/per post) " & y/60 & " minuter," & (i+0.001)/total*100 & "%"
+	Dialog
+		control statictext title textTemp
+		
+		Control EditText into tidsbegr‰nsning value 60
+		
+		Control OKButton
+		Control Cancelbutton
+		 
+		If not(CommandInfo(CMD_INFO_DLG_OK)) Then
+			tidsdialog = 0
+			Exit Sub
+		else
+			tidsdialog = Timer() + tidsbegr‰nsning
+		end if
+
+end function
 
 sub removeAtIndex(InputArray() as string,byval removeIndex as integer, outputArray() as string)
 	dim i,j as integer
@@ -896,10 +989,13 @@ Sub getColumnsOfTable_intoArray(ByVal tableName as string,columnNames() as strin
 		
 	For x=1 to TableInfo(tempAlias, TAB_INFO_NCOLS)
 		onError goto errorX
+<<<<<<< HEAD
+=======
 			print ubound(columnNames())
 			print tempAlias
 			print x
 			print ColumnInfo(tempAlias, "col"+str$(x), 1)
+>>>>>>> origin/OrganiseringF√∂rMailbox
 			redim columnNames(x)
 	    	columnNames(x) = ColumnInfo(tempAlias, "col"+str$(x), 1) 
 	 	onError goto 0
@@ -962,39 +1058,6 @@ sub increment(iProgress as integer,iProgressRange as integer,starttime as intege
 		ProgressBar = -1
 	End If
 
-end sub
-
-sub TimePresent(start as integer,endTime as integer,OptionalNumberOf as integer)
-
-		dim	totaltidH,totaltidM,totaltids,upskattad,upskattadH,upskattadM,upskattads as integer
-		,tidperEnhet,totaltid as float
-		
-		totaltid = endTime - start
-		
-		if OptionalNumberOf <> 0 then
-			tidperEnhet = totaltid/OptionalNumberOf
-		end if
-		
-		if(totaltid > 3600) then
-			totaltidH = totaltid/3600
-			totaltidM = (totaltid mod 3600) / 60
-			totaltids = (totaltid mod 3600) mod 60
-		else
-			totaltidH = 0
-			if(totaltid > 60) then
-				totaltidM = totaltid / 60
-				totaltids = totaltid mod 60
-			else
-				totaltidM = 0
-				totaltids = totaltid
-			end if
-		end if
-		
-		print "upskattat totalt:" & totaltidH & "h" & totaltidM & "m" & totaltids & "s passerade"
-		if OptionalNumberOf <> 0 then
-			print "tidsenheter:" & tidperEnhet
-		end if
-		
 end sub
 
 function compareTwoTablesColumns(table1s as string, table2s as string,columnNamesX() as string, columnNamesY() as string) as integer
@@ -1069,39 +1132,11 @@ sub commitCloseAndReopen(tableName as alias,pathX as string)
 		open table pathX As tableName
 end sub
 
-function tidsdialog(i as integer, y as integer,total as integer) as integer
-	dim textTemp as string
-	dim tidsbegr‰nsning,number as integer
-	
-	number = Y/(i+0.001)
-	Set Format Number "local"
-		
-	textTemp = "poster: " & i & " (" & number & "/per post) " & y/60 & " minuter," & (i+0.001)/total*100 & "%"
-	Dialog
-		control statictext title textTemp
-		
-		Control EditText into tidsbegr‰nsning value 60
-		
-		Control OKButton
-		Control Cancelbutton
-		 
-		If not(CommandInfo(CMD_INFO_DLG_OK)) Then
-			tidsdialog = 0
-			Exit Sub
-		else
-			tidsdialog = Timer() + tidsbegr‰nsning
-		end if
-
-end function
-
 function getColumnsOfTable_asString(ByVal tableName as string) as string
-	dim qM,tableColumns as string
-	dim x as integer
-	dim tempAlias as alias
+	dim qM,tableColumns as string	,x as integer	,tempAlias as alias
 	
-	qM = chr$(34)
-	tempAlias = tableName
-	
+	qM = chr$(34) tempAlias = tableName
+OnError goto BadTableERROR
 	For x=1 to TableInfo(tempAlias, TAB_INFO_NCOLS)
 	    
 	   if(ColumnInfo(tempAlias, "col"+str$(x), COL_INFO_NAME) like "ObjectGeography%") then
@@ -1116,6 +1151,10 @@ function getColumnsOfTable_asString(ByVal tableName as string) as string
 	Next
 	
 	getColumnsOfTable_asString = tableColumns
+exit function
+BadTableERROR:
+	print error$()
+	
 end function
 
 function arrayAsStringIgnoreEmpty(tableX() as string) as string
@@ -1135,6 +1174,58 @@ function arrayAsStringIgnoreEmpty(tableX() as string) as string
 	
 	arrayAsStringIgnoreEmpty = returnString
 End Function
+
+function StringArrayAsString(tableX() as string) as string
+	dim x as integer
+	dim returnString as string
+	
+	For x=1 to UBOUND(tableX)
+	 	returnString = returnString + iif(tableX(x) <> "",tableX(x),"'" & tableX(x) & "'")
+	    
+    	if(x < UBOUND(tableX)) then
+    		returnString = returnString & ","
+    	end if
+	Next
+	
+	StringArrayAsString = returnString
+End Function
+
+function intArrayAsString(tableX() as integer) as string
+	dim x as integer
+	dim returnString as string
+	returnString = ""
+	
+	For x=1 to UBOUND(tableX)
+	 	onError goto inputError
+	 		dim q as logical 
+	 		q = "" & tableX(x) <> ""
+		 	returnString = returnString + iif(q,"" & tableX(x) & "","'" & tableX(x) & "'")
+	    onError goto 0
+	    
+    	if(x < UBOUND(tableX)) then
+    		returnString = returnString & ","
+    	end if
+	Next
+	
+
+	intArrayAsString = returnString
+	
+	
+	
+exit function 
+inputError:
+	For x=1 to UBOUND(tableX)
+		print "error|" & tableX(x)
+	Next
+	print "ubound|" & UBOUND(tableX)
+	print "x|" & x
+	print "returnString|" & returnString
+	print "atpos x|" & tableX(x)
+	print "[ERROR_intArrayAsString|" & error$()
+	end program
+
+End Function
+
 
 sub combineTwoSelections(motherTable as alias,byVal tableName1 as string, byVal tableName2 as string, byVal outPutTable as string)
 	' have to have index on mother table
@@ -1185,9 +1276,11 @@ End Function
 
 function generateMergestring (v‰rde() as string,pÂPlatts() as string,byVal insertinto as string,byVal fromTable as string) as string
 onerror goto strangeError
-	dim allaColumner(),qm,mergeString,jV‰rde,allaColumnerI as string
+	dim allaColumner(1),qm,mergeString,jV‰rde,allaColumnerI as string
 	, i,j,uBoundaCol as integer
 	,found,tempBoolean as logical
+	
+	allaColumner(1) = ""
 	
 	call getColumnsOfTable_intoArray(insertInto,allaColumner)
 	
@@ -1195,7 +1288,7 @@ onerror goto strangeError
 	mergeString = ""
 	uBoundaCol = ubound(allaColumner)
 
-	for i = 1 to uBoundaCol
+	for i = 1 to ubound(allaColumner)
 	
 		allaColumnerI = allaColumner(i)
 		found = false
@@ -1561,31 +1654,23 @@ function generateInsertStringWithArray(insertinto as string,v‰rde() as string) a
 	next
 		
 	SecondHalf = SecondHalf & ")"
+	
+	firstHalf = firstHalf & SecondHalf
 
-	generateInsertStringWithArray = firstHalf & SecondHalf
+	if(insertinto & " Into ressultat () Values ()" = firstHalf) then
+		 goto strangeError
+	end if
+
+	generateInsertStringWithArray = firstHalf
+	
+	
 onerror goto 0	
 
 exit function
 	strangeError:
-	
-		print "strangeError" & ubound(v‰rde) & "|" & uBoundaCol & "|" & error$()
+		print "[strangeError @ generateInsertStringWithArray]" & ubound(v‰rde) & "|" & uBoundaCol & "|" & error$()
 		end program
 end function
-
-function StringArrayAsString(tableX() as string) as string
-	dim x as integer
-	dim returnString as string
-	
-	For x=1 to UBOUND(tableX)
-	 	returnString = returnString + iif(tableX(x) <> "",tableX(x),"'" & tableX(x) & "'")
-	    
-    	if(x < UBOUND(tableX)) then
-    		returnString = returnString & ","
-    	end if
-	Next
-	
-	StringArrayAsString = returnString
-End Function
 
 function FindCharTurncStringByPos(byVal toRemove as string,byVal inputString as string) as string
 	FindCharTurncStringByPos = left$(inputString,
@@ -1670,6 +1755,8 @@ function XOR(byVal a as logical, byVal b as logical) as logical
 
 end function
 
+<<<<<<< HEAD
+=======
 
 '	print j
 '	
@@ -1687,6 +1774,7 @@ end function
 '	next
 
 
+>>>>>>> origin/OrganiseringF√∂rMailbox
 sub commonSubsetOfTwoStrArrays(array1() as string,array2() as string,ressultArray() as string)
 		dim i,j,k as integer
 		
@@ -1714,7 +1802,11 @@ function IFSAMEoneDIFFRENTzeroONEBLANKhalf(byVal valX as string,byVal valY as st
 end function
 
 sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal insertWhere as string)
+<<<<<<< HEAD
+	dim query,excludedColumn,collArray1(),collArray2() as string	,nrCol as integer
+=======
 	dim query,excludedColumn,collArray1,collArray2 as string	,nrCol as integer
+>>>>>>> origin/OrganiseringF√∂rMailbox
 	
 	'trye
 	dim ressultArray(1) as string
@@ -1735,10 +1827,17 @@ sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal inser
 	onError goto ContinueError
 		run command query
 	onError goto 0
+<<<<<<< HEAD
+	
+exit sub
+	ContinueError:
+	print "insertCommonColumnsFromTableXintoY ERROR " & error$()
+=======
 	close table tableToInsert
 exit sub
 	ContinueError:
 	note "insertXintoYtableError" & error$()
+>>>>>>> origin/OrganiseringF√∂rMailbox
 	print query
 	
 	resume next
@@ -1774,7 +1873,7 @@ sub insertXintoYtableWhereXcolLessThaYcol(ByVal tableToInsert as string,byVal in
 	close table tableToInsert
 exit sub
 	ContinueError:
-	note "insertXintoYtableError" & error$()
+	print "insertXintoYtableWhereXcolLessThaYcol ERROR" & error$()
 	print query
 	
 	resume next
@@ -1819,4 +1918,28 @@ function sqlPart_ColNrs(byVal nr as integer) as string
 	
 	sqlPart_ColNrs = tableColumns
 	
+end function
+
+function qm() as string
+	qm = chr$(34)
+end function
+
+function tidsdialogX(inputString as string) as integer
+	dim textTemp as string
+	dim tidsbegr‰nsning,number as integer
+		
+	textTemp = inputstring
+	Dialog
+		control statictext title textTemp
+			
+		Control OKButton
+		Control Cancelbutton
+		 
+		If not(CommandInfo(CMD_INFO_DLG_OK)) Then
+			tidsdialogx = 0
+			Exit Sub
+		else
+			tidsdialogx = 1
+		end if
+
 end function
