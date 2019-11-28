@@ -1,0 +1,15 @@
+(commonlib1.def:126) Subroutine or function already defined: APICreateDirectory.  Too many errors.  Error information has been lost.
+(commonlib1.def:127) Subroutine or function already defined: arrayAsStringIgnoreEmpty.  Too many errors.  Error information has been lost.
+(commonlib1.def:128) Subroutine or function already defined: CheckTable.  Too many errors.  Error information has been lost.
+(commonlib1.def:129) Subroutine or function already defined: columnAtindexAsString.  Too many errors.  Error information has been lost.
+(commonlib1.def:130) Subroutine or function already defined: CommitEveryTable.  Too many errors.  Error information has been lost.
+(commonlib1.def:131) Subroutine or function already defined: compareTwoTablesColumns.  Too many errors.  Error information has been lost.
+(commonlib1.def:132) Subroutine or function already defined: CountRows.  Too many errors.  Error information has been lost.
+(commonlib1.def:133) Subroutine or function already defined: CreateDirectory.  Too many errors.  Error information has been lost.
+(commonlib1.def:134) Subroutine or function already defined: createTemporaryTableAndOpen.  Too many errors.  Error information has been lost.
+(commonlib1.def:135) Subroutine or function already defined: DiarieUtanBokstäver.  Too many errors.  Error information has been lost.
+(commonlib1.def:136) Subroutine or function already defined: doesnTableExist.  Too many errors.  Error information has been lost.
+(commonlib1.def:137) Subroutine or function already defined: FindCharTurncStringByPos.  Too many errors.  Error information has been lost.
+(commonlib1.def:138) Subroutine or function already defined: findInINTArray.  Too many errors.  Error information has been lost.
+(commonlib1.def:139) Subroutine or function already defined: findInStringArray.  Too many errors.  Error information has been lost.
+(commonlib1.def:140) Subroutine or function already defined: FirstLeftMostNumber.  Too many errors.  Error information has been lost.
