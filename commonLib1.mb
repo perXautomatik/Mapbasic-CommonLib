@@ -344,12 +344,6 @@ sub closeTableByPath(byVal Tpath as string)
 	Next
 end sub
 
-'opens a single table and return boolean if successfully opened
-<<<<<<< HEAD
-=======
-'require "pathTable" to be opened
-
->>>>>>> origin/OrganiseringFörMailbox
 function openTableAndConfirm(byval toOpen as string) as logical
 	dim filePath, alternativeName,tpA(1) as string, debug as logical					
 
@@ -1226,7 +1220,6 @@ inputError:
 
 End Function
 
-
 sub combineTwoSelections(motherTable as alias,byVal tableName1 as string, byVal tableName2 as string, byVal outPutTable as string)
 	' have to have index on mother table
 ' will close table1 and table2
@@ -1788,26 +1781,6 @@ function XOR(byVal a as logical, byVal b as logical) as logical
 
 end function
 
-<<<<<<< HEAD
-=======
-
-'	print j
-'	
-'	print "inArray"
-'	for j = 1 to ubound(inArray1)
-'		print inArray1(j)
-'	next
-'	print "inArray2"
-'	for j = 1 to ubound(inArray2)
-'		print inArray2(j)
-'	next
-'	print "outArray"
-'	for j = 1 to ubound(outArray)
-'		print outArray(j)
-'	next
-
-
->>>>>>> origin/OrganiseringFörMailbox
 sub commonSubsetOfTwoStrArrays(array1() as string,array2() as string,ressultArray() as string)
 		dim i,j,k as integer
 		
