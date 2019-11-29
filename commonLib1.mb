@@ -105,12 +105,7 @@ sub closeAllBut(tableNames() as string)
 	'a empty table of tables to keep open, plus a last entry with pathTable
 
 	ReDim CopyOfTableNotToClose(ubound(tableNames)+1)	
-<<<<<<< HEAD
-	
-=======
-			
->>>>>>> origin/OrganiseringFörMailbox
-	
+
 	'coppies the table that was initially inserted
 	for K = 1 to ubound(tableNames)
 		CopyOfTableNotToClose(K) = tableNames(K)
@@ -129,12 +124,10 @@ sub closeAllBut(tableNames() as string)
 		next
 		
 		onError goto errorx
-<<<<<<< HEAD
 			if not(theOpenTable = "" AND theOpenTable =  "PathTABLE" ) then
-=======
 			if not(theOpenTable = "") then
->>>>>>> origin/OrganiseringFörMailbox
 				call closeSingleTable(theOpenTable)
+			end if
 			end if
 		onError goto 0	
 		found:
@@ -342,14 +335,9 @@ sub closeTableByPath(byVal Tpath as string)
 end sub
 
 'opens a single table and return boolean if successfully opened
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
+
 'require "pathTable" to be opened
 
->>>>>>> origin/OrganiseringFörMailbox
->>>>>>> 37fb5db69acc5a93c110a5f7b15a3ccc6a471240
 function openTableAndConfirm(byval toOpen as string) as logical
 	dim filePath, alternativeName,tpA(1) as string, debug as logical					
 
@@ -989,13 +977,10 @@ Sub getColumnsOfTable_intoArray(ByVal tableName as string,columnNames() as strin
 		
 	For x=1 to TableInfo(tempAlias, TAB_INFO_NCOLS)
 		onError goto errorX
-<<<<<<< HEAD
-=======
 			print ubound(columnNames())
 			print tempAlias
 			print x
 			print ColumnInfo(tempAlias, "col"+str$(x), 1)
->>>>>>> origin/OrganiseringFörMailbox
 			redim columnNames(x)
 	    	columnNames(x) = ColumnInfo(tempAlias, "col"+str$(x), 1) 
 	 	onError goto 0
@@ -1802,11 +1787,7 @@ function IFSAMEoneDIFFRENTzeroONEBLANKhalf(byVal valX as string,byVal valY as st
 end function
 
 sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal insertWhere as string)
-<<<<<<< HEAD
 	dim query,excludedColumn,collArray1(),collArray2() as string	,nrCol as integer
-=======
-	dim query,excludedColumn,collArray1,collArray2 as string	,nrCol as integer
->>>>>>> origin/OrganiseringFörMailbox
 	
 	'trye
 	dim ressultArray(1) as string
@@ -1827,17 +1808,10 @@ sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal inser
 	onError goto ContinueError
 		run command query
 	onError goto 0
-<<<<<<< HEAD
 	
 exit sub
 	ContinueError:
 	print "insertCommonColumnsFromTableXintoY ERROR " & error$()
-=======
-	close table tableToInsert
-exit sub
-	ContinueError:
-	note "insertXintoYtableError" & error$()
->>>>>>> origin/OrganiseringFörMailbox
 	print query
 	
 	resume next
