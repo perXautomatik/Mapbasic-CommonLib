@@ -1,0 +1,15 @@
+(commonlib1.def:1) Unrecognized command: <.  Too many errors.  Error information has been lost.
+(commonlib1.def:129) = is not valid outside a Sub procedure or Function.  Too many errors.  Error information has been lost.
+(commonlib1.def:130) Subroutine or function already defined: APICreateDirectory.  Too many errors.  Error information has been lost.
+(commonlib1.def:131) Subroutine or function already defined: CreateDirectory.  Too many errors.  Error information has been lost.
+(commonlib1.def:132) Subroutine or function already defined: DiarieUtanBokstäver.  Too many errors.  Error information has been lost.
+(commonlib1.def:133) Subroutine or function already defined: FindCharTurncStringByPos.  Too many errors.  Error information has been lost.
+(commonlib1.def:134) Subroutine or function already defined: FirstLeftMostNumber.  Too many errors.  Error information has been lost.
+(commonlib1.def:135) Subroutine or function already defined: getFnr.  Too many errors.  Error information has been lost.
+(commonlib1.def:136) Subroutine or function already defined: IFSAMEoneDIFFRENTzeroONEBLANKha.  Too many errors.  Error information has been lost.
+(commonlib1.def:137) Subroutine or function already defined: isPathOpen.  Too many errors.  Error information has been lost.
+(commonlib1.def:138) Subroutine or function already defined: mixedDateToUnion.  Too many errors.  Error information has been lost.
+(commonlib1.def:139) Subroutine or function already defined: ReturnTrue.  Too many errors.  Error information has been lost.
+(commonlib1.def:140) Subroutine or function already defined: SearchReplace.  Too many errors.  Error information has been lost.
+(commonlib1.def:141) Subroutine or function already defined: SqlGenWhereColIsNotAny.  Too many errors.  Error information has been lost.
+(commonlib1.def:142) Subroutine or function already defined: sqlPart_ColNrs.  Too many errors.  Error information has been lost.

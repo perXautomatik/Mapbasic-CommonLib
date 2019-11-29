@@ -104,7 +104,7 @@ sub closeAllBut(tableNames() as string)
 	
 	'a empty table of tables to keep open, plus a last entry with pathTable
 
-	ReDim CopyOfTableNotToClose(ubound(tableNames)+1)	
+
 
 	'coppies the table that was initially inserted
 	for K = 1 to ubound(tableNames)
@@ -124,8 +124,11 @@ sub closeAllBut(tableNames() as string)
 		next
 		
 		onError goto errorx
+
 			if not(theOpenTable = "" AND theOpenTable =  "PathTABLE" ) then
+
 			if not(theOpenTable = "") then
+
 				call closeSingleTable(theOpenTable)
 			end if
 			end if
@@ -977,10 +980,12 @@ Sub getColumnsOfTable_intoArray(ByVal tableName as string,columnNames() as strin
 		
 	For x=1 to TableInfo(tempAlias, TAB_INFO_NCOLS)
 		onError goto errorX
+
 			print ubound(columnNames())
 			print tempAlias
 			print x
 			print ColumnInfo(tempAlias, "col"+str$(x), 1)
+
 			redim columnNames(x)
 	    	columnNames(x) = ColumnInfo(tempAlias, "col"+str$(x), 1) 
 	 	onError goto 0
@@ -1210,7 +1215,6 @@ inputError:
 	end program
 
 End Function
-
 
 sub combineTwoSelections(motherTable as alias,byVal tableName1 as string, byVal tableName2 as string, byVal outPutTable as string)
 	' have to have index on mother table
@@ -1740,26 +1744,7 @@ function XOR(byVal a as logical, byVal b as logical) as logical
 
 end function
 
-<<<<<<< HEAD
-=======
 
-'	print j
-'	
-'	print "inArray"
-'	for j = 1 to ubound(inArray1)
-'		print inArray1(j)
-'	next
-'	print "inArray2"
-'	for j = 1 to ubound(inArray2)
-'		print inArray2(j)
-'	next
-'	print "outArray"
-'	for j = 1 to ubound(outArray)
-'		print outArray(j)
-'	next
-
-
->>>>>>> origin/OrganiseringFörMailbox
 sub commonSubsetOfTwoStrArrays(array1() as string,array2() as string,ressultArray() as string)
 		dim i,j,k as integer
 		
@@ -1787,6 +1772,7 @@ function IFSAMEoneDIFFRENTzeroONEBLANKhalf(byVal valX as string,byVal valY as st
 end function
 
 sub insertCommonColumnsFromTableXintoY(ByVal tableToInsert as string,byVal insertWhere as string)
+
 	dim query,excludedColumn,collArray1(),collArray2() as string	,nrCol as integer
 	
 	'trye
