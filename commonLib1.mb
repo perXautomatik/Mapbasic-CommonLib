@@ -63,6 +63,7 @@ Function RowColumnAsString(ByVal tableName as String, ByVal columnName as String
 		select aliasB from aliasA into TempTable
 		Fetch Rec 1 from TempTable	
 		RowColumnAsString = TempTable.col1 & ""
+		
 		close table TempTable
 	End Function
 	
@@ -303,14 +304,14 @@ End Function
 
 function isPathOpen(byVal Tpath as string) as logical
 		Dim lcv as SmallInt
-
-		isPathOpen = 0
+	
 		For lcv = 1 to numTables()
 			If Tpath = tableInfo(lcv,Tab_info_tabfile) Then
 				isPathOpen = 1
 				Exit Sub
 			End If
 		Next
+isPathOpen = 0
 End Function
 
 function tableNameByPath(byVal Tpath as string) as string
@@ -1501,7 +1502,6 @@ exit sub
 	arrayerror:
 	print "arrayError:can't remove:" & värde & "|inputArraysize:" & ubound(array) & "|" & error$()
 end sub
-
 
 sub removeFromStringArray(array() as String,värde as String)
 onerror goto arrayError
