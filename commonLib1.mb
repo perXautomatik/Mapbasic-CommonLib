@@ -1858,3 +1858,330 @@ function sqlPart_ColNrs(byVal nr as integer) as string
 	sqlPart_ColNrs = tableColumns
 	
 end function
+
+sub do1_1_genPathTab
+	dim tempstring,commandX,tempFileName as string
+	tempstring = "PathTABLE"
+	if IsTableOpen(tempstring) then close table "pathTable" end if
+	tempFileName = TempFileName$("")
+	commandX = "CREATE TABLE PathTABLE (tableName Char(40),tablePath Char(256),alternative Char(40)) File """ & tempFileName & """"
+	onError goto printPath
+		run command commandX
+	onError goto 0
+	
+exit sub
+	printPath:
+	print commandx 
+	print error$()
+	end program
+end sub
+
+'insert tables keys
+'insted of individually provide alternative path to each folder, instead you simply give a general path for each table
+'does not work with tables who have other name than there initial file. how do we fix that?
+
+function openTableAndConfirmByPath(byval toOpen as string,byVal filePath as string) as logical
+	dim alternativeName,tpA(1) as string, debug as logical					
+
+	debug = false
+	if IsTableOpen(toOpen) then
+		if debug then print "alreadyOpenError" end if
+		goto alreadyOpenError
+	else 'the table isn't open
+		if debug then print "Notalready" end if
+
+		if false then 'there is no row entry
+		else
+			if debug then print "row entry" end if
+		
+			if (isPathOpen(filePath)) then
+				if debug then print "path is open elsewhereError" end if
+				goto PathAlreadyOpenedError 'path is open elsewhere			
+			end if	
+				openStep:
+				if debug then print "openStep" end if
+				
+				onError goto ErrorOpeningErorr
+					Open Table filePath as toOpen
+				onError goto 0
+			
+				if(TableIsNotOpen(toOpen)) then 
+					if debug then print "the table is not open, resorting to alternative" end if
+					alternativeName = ""
+					if alternativeName = "" then	'eather overwrite alternative path or send noalternativeerror2
+						if debug then print "no alternative" end if
+						goto NoAlternativeError2
+					else
+						if true then  'open alternative reference
+							if debug then print "tryed open with recursion, but failed" end if
+							goto NoAlternativeError3
+						else	'if it did succeede to open the alternative path
+							if debug then print "succeede to open the alternative path" end if
+							OnError goto UnAbleToCreateError
+								Commit Table tpA(1) As filePath TYPE NATIVE Charset "WindowsLatin1" 'copies alternativeTable in the spot of original name
+								close table tpA(1) 'make sure alternativeName table is closed, copie will open later
+							OnError goto 0
+							goto openStep
+						end if
+					end if
+				end if
+		end if
+	end if
+		
+	if(TableIsNotOpen(toOpen)) then 
+		goto OpenFailerror 'table is not open
+	else
+		openTableAndConfirmByPath = true
+	end if		
+	
+	endFunction:
+	call closeSingleTable("pathTableRefference")
+exit function
+OpenFailerror:
+	print "[Error_openTableAndConfirmByPath] Failed to open table from specified path; " & filePath & " with specified name; " & toOpen
+	openTableAndConfirmByPath = false
+	goto endFunction
+tableNamerror:
+	print "[Error_openTableAndConfirmByPath] No table avialable with specified name; " & toOpen
+	openTableAndConfirmByPath = false
+	goto endFunction
+PathAlreadyOpenedError:
+	print "[warning_openTableAndConfirmByPath] Path " & filePath & " was opened under another name: " & tableNameByPath(toOpen)
+	goto openStep
+alreadyOpenError:
+	print "[Warning_openTableAndConfirmByPath] name specified is already open; " & toOpen 
+	openTableAndConfirmByPath = true
+	goto endFunction
+ErrorOpeningErorr:
+	print "[warning_openTableAndConfirmByPath] specified path was invalid; " & filePath
+	resume next
+NoAlternativeError2:
+	print "[Error_openTableAndConfirmByPath] Alternative doesn't exist for path; " & filePath
+	openTableAndConfirmByPath = false
+	goto endFunction
+NoAlternativeError3:
+	print "[Error_openTableAndConfirmByPath] Failed to open alternative path"
+	openTableAndConfirmByPath = false
+	goto endFunction
+UnAbleToCreateError:
+	print "[Error_openTableAndConfirmByPath] Unable To create alternative" & alternativeName & "||"  & error$()
+	openTableAndConfirmByPath = false
+	goto endFunction
+End function
+
+sub insertInitialTables(tableKeys() as string, pathListPickedInOrder() as string)
+		
+	dim Done as logical
+	,folderNr,j,y as integer
+	,tablesToOpen(),queryString,pathX as string
+	queryString = ""
+	
+	for y=1 to ubound(tableKeys)
+		redim tablesToOpen(y)
+		tablesToOpen(y) = tableKeys(y)
+	next
+	
+	'maximum pathListPickedInOrder x tablesToOpen
+	'minimum tablesToOpen
+	For folderNr = 1 To ubound(pathListPickedInOrder)
+																		RestartLoop: 
+			For j = 1 To ubound(tablesToOpen)
+
+					pathX = chr$(34) & pathListPickedInOrder(folderNr) & tablesToOpen(j) & ".TAB" & chr$(34)
+					'queryString = "open table " & pathX
+					'run command queryString
+					dim tempLogical as logical tempLogical = openTableAndConfirmByPath(tablesToOpen(j),pathX)
+					
+					if tempLogical then
+							onError goto CouldntClosePath
+								call closeSingleTable(tablesToOpen(j))
+							onError goto 0
+							OnError goto CouldntAddToPathTable
+								queryString = "insert into Pathtable (tablePath,TableName) values (" & pathX & ", " & chr$(34) &  tablesToOpen(j) & chr$(34) & ")"
+								run command	queryString 
+							onError goto 0
+							onError goto couldNotRemoveFromArrayError
+								call removeFromStringArray(tablesToOpen,tablesToOpen(j))
+							onError goto 0
+								Done = (ubound(tablesToopen) = 0)
+								goto RestartLoop
+					End If
+								
+				'on success, should restart loop, the tablesToOpen change in size as we remove entries
+				'on fail, increment j, and trye again.
+																					TryNextPath: 
+				'on end of j, trye next folder. reset j, but only as long as done is not set true
+			next
+			if done then 'then can eather happen due to out of paths or by finding each key
+				exit sub
+			end if
+	next
+	
+	print StringArrayAsString(tablesToOpen)
+
+exit sub
+sub do9_Presentation
+	dim commandstring as string
+	,NrNaturSkydd,i as integer
+	NrNaturSkydd = 0
+	
+	
+	Dim nWindowID As Integer
+	
+	commandstring = "Map From NaturreservatGtlkusten_NVK"
+	For i = 1 to NumTables()
+		if like(Tableinfo(i, TAB_INFO_NAME), "Natur_","") then
+	    	commandstring = commandstring & "," & Tableinfo(i, TAB_INFO_NAME)
+	    	NrNaturSkydd = NrNaturSkydd+1
+	   	end if
+	Next
+	commandstring = commandstring & ",FastighetUtanSkifte"
+	
+	if lDebugg then
+		print commandstring
+	end if
+	
+	run command commandstring
+	nWindowID = FrontWindow()
+	
+	Set Window nWindowID Enhanced On
+	Set Window nWindowID Front
+	
+	set Map window nWindowID layer 1 Alpha 99 
+	Set Map Window nWindowID Order Layers 1 DestGroupLayer 0 
+	Set Map Window nWindowID Layer NrNaturSkydd+2 Display Global Global Pen (1,2,0) Global Brush (2,16777215,16777215)  
+	
+	call renameTablesWithColumn("Natur","COl6")
+	
+	browse * from ResTabWithObj
+	
+end sub
+
+sub renameTablesWithColumn(byVal enumeratedTablePrefix as string, byVal columnName as string)
+	dim fastighet as string
+	,tempAlias as alias
+	,i,y as integer
+	
+	for i = 1 to NrNaturSkydd
+		
+		tempAlias = enumeratedTablePrefix & i
+		run command "select " & columnName & " from  " & tempAlias & " into newTableName"
+		
+		fetch first from newTableName
+		fastighet = newTableName.COl1
+		
+		y = i+1 
+		Set Map Window nWindowID Layer y Display Global 
+		Set Map Window nWindowID Layer y Global Pen (1,2,0)
+		Set Map Window nWindowID Layer y Global Brush (2,65280,16777215)
+		Set Map Window nWindowID Layer y FriendlyName fastighet
+	next
+end sub
+
+sub tableColumnAsArray(byVal tableName as string, byVal kolumnNamn as string,array() as integer)
+	'feels like a genereral enough method to add to CommonMethods
+	dim i as integer
+	, utvald,tempAlias2 as alias
+	
+	utvald = tableName
+	
+	fetch first from utvald
+	do until eot(utvald)
+		i = i +1
+		redim array(i)
+		OnError goto NoSuchKolumnError
+		tempAlias2 = tableName & "." & kolumnNamn
+		array(i) = tempAlias2
+		OnError goto 0
+		
+		if false then
+			NoSuchKolumnError:
+		print error$()
+		End If
+
+		fetch next from utvald
+	loop
+		
+End Sub
+
+function Add_rowid(ByVal TabLeThatWillBeReSavedAsTemp as string) as logical
+	'todo: change syntax for if found then end, gotta be more elegant ways to do this
+	dim q,
+	x as integer,
+	found as logical,
+	tempString as string,
+	tempAlias as alias
+	
+	found = false
+	tempString = "_rowid"
+	tempAlias = TabLeThatWillBeReSavedAsTemp
+		
+	for x = 1 to tableInfo(tempAlias, 4)
+		if(tempString = Columninfo(tempAlias,"COl"& x,1)) then
+			found = true
+			goto endOFLoop
+		else
+			found = false
+		end if
+	next
+	endOfLoop:
+	
+	
+	if not(found) then
+		Add Column TabLeThatWillBeReSavedAsTemp (_rowid integer) from tempAlias set To rowid
+	end if
+		
+	call görTillBasTabell(TabLeThatWillBeReSavedAsTemp)
+	Add_rowid = true
+end function
+
+sub dedupeIntoTemp(byVal tableNameWhoHasTHe_RowidCOlumn as string, byVal kolumnNamn as string)
+'attempts to make a grouping of objects while mainting the ressulting grafic 
+'does normaly not work, so the method makes a copy of the table, asignes each row id, 
+' then group by provided column namn, and make a new table from original source, where it selects each row
+' with the rowid provided when making the select, the geo object is intanct and you could say that the grouping was made witout loss
+' it would probably be more correct to call the method, dedupeIntoTemp, as group by could be asumed, that the graphical objects should be merged, 
+' this mearly pick one object with each distinguished column value.
+
+	dim tempAlias,tempAlias2 as string
+	tempAlias = tableNameWhoHasTHe_RowidCOlumn
+	tempAlias2 = kolumnNamn
+
+	call updateIndex(tableNameWhoHasTHe_RowidCOlumn) 'makes sure index is in the table provided
+
+	select * from tableNameWhoHasTHe_RowidCOlumn group by tempAlias2 into tabellUtanGrafik 'makes the object destroying groupBy
+	
+	call görTillbastabell(tabellUtanGrafik) 'stores result as temporary table and closes original
+	
+	run command ("select " & getColumnsOfTable_asString(tableNameWhoHasTHe_RowidCOlumn) & 
+	" from " & tableNameWhoHasTHe_RowidCOlumn & 
+	",tabellUtanGrafik where " & tableNameWhoHasTHe_RowidCOlumn & "._rowid = tabellUtanGrafik._rowid  into withGrafik") 'makes a join of the original table and the new temporary table without objects
+	
+	call görTillBastabell("withGrafik") 'the ressulting table is stored as a temporary table, and the join is discarded.
+
+	close table tableNameWhoHasTHe_RowidCOlumn 'cleanup
+	close table tabellUtanGrafik 'cleanup
+	select * from withGrafik into tableNameWhoHasTHe_RowidCOlumn 'renaming ressult table to take the place of initial table
+	
+	call görTillBastabell("tableNameWhoHasTHe_RowidCOlumn") 'sames the table in new name
+	close table withGrafik
+	
+	run command ("Create Index On " & tableNameWhoHasTHe_RowidCOlumn & "(" & kolumnNamn & ")") 'makes sure that the index now reflect the new item density after deduping.
+
+	commit table tableNameWhoHasTHe_RowidCOlumn
+
+End Sub
+
+sub printToFile(byVal tableName as string,byVal pathString as string)
+
+	Select fastighet,EntryID From tableName Into my_query
+	Open file pathString For Output As #1
+	Fetch First From my_query
+	Do While Not EOT(my_query)'The Write #1 statement will automatically add commas between fields. If you don't want this then use Print #1.
+		
+	Print #1, "	" & my_query.Col2 & ", " & my_query.Col1
+    	
+    	Fetch Next From my_query
+Loop
+Close File #1
+End Sub
